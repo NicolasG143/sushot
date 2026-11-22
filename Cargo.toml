@@ -11,6 +11,8 @@ publish = false
 klip-core = { path = "core" }
 klip-platform-windows = { path = "platform-windows" }
 klip-platform-linux = { path = "platform-linux" }
+log = "0.4.35"
+windows = "0.62.2"
 
 [profile.release]
 opt-level = "z"
