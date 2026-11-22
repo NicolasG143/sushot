@@ -5,8 +5,10 @@ use winit::event_loop::ActiveEventLoop;
 use winit::window::WindowId;
 
 use crate::capture;
+use crate::dialogs::NativeDialogs;
 use crate::interaction::Outcome;
 use crate::overlay::Overlay;
+use crate::save::Saver;
 
 pub(crate) enum UiEvent {
     Action(Action),
@@ -15,6 +17,7 @@ pub(crate) enum UiEvent {
 pub(crate) struct App<P> {
     platform: P,
     overlay: Option<Overlay>,
+    saver: Saver,
 }
 
 impl<P: Platform> App<P> {
@@ -22,6 +25,7 @@ impl<P: Platform> App<P> {
         Self {
             platform,
             overlay: None,
+            saver: Saver::default(),
         }
     }
 
@@ -31,7 +35,9 @@ impl<P: Platform> App<P> {
             return;
         }
         if action.mode == Mode::FullScreen {
-            if let Err(error) = capture::full_screen(&self.platform, action.output) {
+            if let Err(error) =
+                capture::full_screen(&self.platform, &self.saver, NativeDialogs, action.output)
+            {
                 log::error!("capture failed: {error}");
             }
             return;
@@ -61,6 +67,8 @@ impl<P: Platform> App<P> {
                 log::debug!("selection confirmed: {area:?}");
                 if let Err(error) = capture::deliver(
                     &self.platform,
+                    &self.saver,
+                    NativeDialogs,
                     overlay.desktop(),
                     area,
                     overlay.action().output,

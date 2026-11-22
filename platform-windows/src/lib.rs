@@ -3,15 +3,18 @@
 mod capture;
 mod clipboard;
 mod dib_v5;
+mod environment;
 mod error;
+mod foreground;
 mod hotkeys;
 mod monitor;
 mod snapshot_key;
 mod windows_at;
 
+use std::path::PathBuf;
 use std::sync::mpsc::Sender;
 
-use klip_core::{Action, Frame, Platform, PlatformError, Rect, WindowId};
+use klip_core::{Action, Frame, LocalTime, Platform, PlatformError, Rect, WindowId};
 
 /// Coordinates are physical pixels only when the process is per-monitor DPI aware.
 pub struct WindowsPlatform;
@@ -31,6 +34,22 @@ impl Platform for WindowsPlatform {
 
     fn place_overlay(&self, window: WindowId, area: Rect) -> Result<(), PlatformError> {
         windows_at::place_overlay(window, area)
+    }
+
+    fn grant_foreground(&self) {
+        foreground::grant();
+    }
+
+    fn local_time(&self) -> LocalTime {
+        environment::local_time()
+    }
+
+    fn config_path(&self) -> Option<PathBuf> {
+        environment::config_path()
+    }
+
+    fn pictures_dir(&self) -> Option<PathBuf> {
+        environment::pictures_dir()
     }
 
     fn copy_image(&self, image: &Frame) -> Result<(), PlatformError> {

@@ -5,9 +5,11 @@ compile_error!("klip has no platform backend for this target");
 
 mod app;
 mod capture;
+mod dialogs;
 mod interaction;
 mod logger;
 mod overlay;
+mod save;
 
 use std::error::Error;
 use std::process::ExitCode;

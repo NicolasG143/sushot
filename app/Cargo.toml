@@ -9,6 +9,7 @@ license-file.workspace = true
 [dependencies]
 klip-core = { workspace = true }
 log = { workspace = true }
+rfd = { version = "0.18.0", default-features = false }
 softbuffer = { version = "0.4.8", default-features = false }
 winit = { version = "0.30", default-features = false, features = ["rwh_06"] }
 
