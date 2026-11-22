@@ -10,6 +10,7 @@ const TOOLTIP: &str = "klip";
 const AUTOSTART_LABEL: &str = "Iniciar con el sistema";
 const QUIT_LABEL: &str = "Salir";
 
+#[cfg(windows)]
 /// tray-icon numbers its icons from 1 and this process creates exactly one.
 const FIRST_ICON_ID: u32 = 1;
 
@@ -71,6 +72,7 @@ impl Tray {
         self.show(&self.normal);
     }
 
+    #[cfg(windows)]
     pub(crate) fn notify(&self, title: &str, text: &str) {
         let window = self.icon.window_handle() as isize;
         if let Err(error) =
@@ -78,6 +80,11 @@ impl Tray {
         {
             log::warn!("{error}");
         }
+    }
+
+    #[cfg(not(windows))]
+    pub(crate) fn notify(&self, title: &str, text: &str) {
+        log::info!("{title}: {text}");
     }
 
     fn show(&self, icon: &Icon) {

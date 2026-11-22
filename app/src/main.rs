@@ -1,13 +1,16 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-#[cfg(not(windows))]
+#[cfg(not(any(windows, target_os = "linux")))]
 compile_error!("klip has no platform backend for this target");
 
 mod app;
 mod capture;
+mod cli;
 mod dialogs;
 mod icon;
 mod interaction;
+#[cfg(unix)]
+mod ipc;
 mod logger;
 mod overlay;
 mod save;
@@ -19,22 +22,63 @@ use std::process::ExitCode;
 use std::sync::mpsc;
 use std::thread;
 
-use klip_core::{Platform, load_config};
-use klip_platform_windows::WindowsPlatform;
+use klip_core::{Action, Platform, load_config};
 use tray_icon::menu::MenuEvent;
 use winit::event_loop::EventLoop;
 
 use crate::app::{App, UiEvent};
+use crate::cli::Command;
+
+#[cfg(windows)]
+fn backend() -> impl Platform {
+    klip_platform_windows::WindowsPlatform
+}
+
+#[cfg(target_os = "linux")]
+fn backend() -> impl Platform {
+    klip_platform_linux::LinuxPlatform
+}
 
 fn main() -> ExitCode {
     logger::init();
-    match run(WindowsPlatform) {
+    let command = match cli::parse(std::env::args().skip(1)) {
+        Ok(command) => command,
+        Err(error) => {
+            eprintln!(
+                "klip: {}
+{}",
+                error.0,
+                cli::USAGE
+            );
+            return ExitCode::from(2);
+        }
+    };
+    let platform = backend();
+    let outcome = match command {
+        Command::Run => run(platform),
+        Command::Capture(action) => request_capture(&platform, action),
+    };
+    match outcome {
         Ok(()) => ExitCode::SUCCESS,
         Err(error) => {
             log::error!("{error}");
+            eprintln!("klip: {error}");
             ExitCode::FAILURE
         }
     }
+}
+
+#[cfg(unix)]
+fn request_capture(platform: &impl Platform, action: Action) -> Result<(), Box<dyn Error>> {
+    let path = platform
+        .ipc_path()
+        .ok_or("capture requests need XDG_RUNTIME_DIR")?;
+    ipc::send(&path, action)
+}
+
+#[cfg(not(unix))]
+fn request_capture(_platform: &impl Platform, _action: Action) -> Result<(), Box<dyn Error>> {
+    Err("capture requests are only available on Linux".into())
 }
 
 fn run(platform: impl Platform) -> Result<(), Box<dyn Error>> {
@@ -58,8 +102,17 @@ fn run(platform: impl Platform) -> Result<(), Box<dyn Error>> {
         }
     }));
 
+    #[cfg(unix)]
+    if let Some(path) = platform.ipc_path() {
+        ipc::listen(&path, event_loop.create_proxy())?;
+    }
+
     let (actions_tx, actions_rx) = mpsc::channel();
-    platform.register_hotkeys(actions_tx)?;
+    if let Err(error) = platform.register_hotkeys(actions_tx) {
+        log::warn!(
+            "{error}; klip keeps running, use `klip --region` and its siblings from a system shortcut"
+        );
+    }
     let action_proxy = event_loop.create_proxy();
     thread::Builder::new()
         .name("klip-actions".into())

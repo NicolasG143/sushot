@@ -10,6 +10,14 @@ exceptions = [
     # Compile-time only: it is a dependency of procedural macros and is never
     # linked into the shipped binary.
     { allow = ["Unicode-3.0"], crate = "unicode-ident" },
+    # Public domain dedication used by the Linux tray backend (D-Bus StatusNotifierItem).
+    # Pending confirmation, like the Unicode-3.0 exception.
+    { allow = ["Unlicense"], crate = "ksni" },
+    # Windows-only dependencies of arboard, which klip uses on Linux only. cargo-deny
+    # checks each dependency edge against every listed target, so they are reported
+    # although no Linux build compiles them and the Windows build never reaches arboard.
+    { allow = ["BSL-1.0"], crate = "clipboard-win" },
+    { allow = ["BSL-1.0"], crate = "error-code" },
 ]
 
 [licenses.private]

@@ -57,6 +57,24 @@ impl<P: Platform> App<P> {
             log::debug!("ignoring {action:?}: a selection is already in progress");
             return;
         }
+        if !self.platform.has_selection_overlay() {
+            let result = self
+                .platform
+                .capture_with_system_ui(action.mode)
+                .map_err(capture::CaptureError::from)
+                .and_then(|frame| {
+                    capture::deliver(
+                        &self.platform,
+                        &self.saver,
+                        NativeDialogs,
+                        &frame,
+                        frame.bounds(),
+                        action.output,
+                    )
+                });
+            self.report(result);
+            return;
+        }
         if action.mode == Mode::FullScreen {
             let result =
                 capture::full_screen(&self.platform, &self.saver, NativeDialogs, action.output);

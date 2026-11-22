@@ -241,6 +241,8 @@ fn arrow_step(key: &Key) -> Option<(i32, i32)> {
 fn native_id(window: &Window) -> Result<WindowId, Box<dyn Error>> {
     match window.window_handle()?.as_raw() {
         RawWindowHandle::Win32(handle) => Ok(WindowId(handle.hwnd.get())),
+        RawWindowHandle::Xlib(handle) => Ok(WindowId(handle.window as isize)),
+        RawWindowHandle::Xcb(handle) => Ok(WindowId(handle.window.get() as isize)),
         other => Err(format!("unsupported window handle {other:?}").into()),
     }
 }
