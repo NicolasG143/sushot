@@ -22,7 +22,8 @@ pub(crate) struct Overlay {
     canvas: Canvas,
     interaction: Interaction,
     action: Action,
-    painted: Option<Rect>,
+    painted: Scene,
+    cursor_known: bool,
     pending: Option<Rect>,
     presented_once: bool,
 }
@@ -65,7 +66,8 @@ impl Overlay {
             canvas,
             interaction: Interaction::new(action.mode),
             action,
-            painted: None,
+            painted: Scene::default(),
+            cursor_known: false,
             pending: None,
             presented_once: false,
         };
@@ -99,6 +101,7 @@ impl Overlay {
                 log::trace!("cursor at {position:?}");
                 self.interaction
                     .move_to((position.x.round() as i32, position.y.round() as i32));
+                self.cursor_known = true;
                 if self.interaction.mode() == Mode::Window {
                     self.interaction.hover(self.window_under_cursor(platform));
                 }
@@ -158,28 +161,42 @@ impl Overlay {
             .and_then(|window| self.canvas.area().intersection(window))
     }
 
+    fn scene(&self) -> Scene {
+        let loupe = (self.interaction.mode() == Mode::Region && self.cursor_known)
+            .then(|| self.interaction.cursor());
+        Scene {
+            highlight: self.interaction.highlight(),
+            loupe,
+        }
+    }
+
     fn refresh(&mut self) {
-        if self.interaction.highlight() != self.painted {
+        if self.scene() != self.painted {
             self.window.request_redraw();
         }
     }
 
     /// Paints only at redraw time, so a burst of cursor moves costs a single paint.
     fn paint(&mut self) {
-        let highlight = self.interaction.highlight();
-        if highlight == self.painted {
+        let scene = self.scene();
+        if scene == self.painted {
             return;
         }
-        let dirty = [self.painted, highlight]
+        let highlights = [self.painted.highlight, scene.highlight]
             .into_iter()
             .flatten()
-            .map(|area| self.canvas.footprint(area))
-            .reduce(Rect::union);
-        self.painted = highlight;
+            .map(|area| self.canvas.footprint(area));
+        let loupes = [self.painted.loupe, scene.loupe]
+            .into_iter()
+            .flatten()
+            .map(|cursor| self.canvas.loupe_box(cursor));
+        let dirty = highlights.chain(loupes).reduce(Rect::union);
+        self.painted = scene;
         let Some(dirty) = dirty else {
             return;
         };
-        self.canvas.paint(&self.desktop, highlight, dirty);
+        self.canvas
+            .paint(&self.desktop, scene.highlight, scene.loupe, dirty);
         self.pending = Some(self.pending.map_or(dirty, |pending| pending.union(dirty)));
     }
 
@@ -234,6 +251,13 @@ impl Overlay {
             }
         }
     }
+}
+
+/// What the canvas currently shows besides the dimmed desktop.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+struct Scene {
+    highlight: Option<Rect>,
+    loupe: Option<(i32, i32)>,
 }
 
 fn arrow_step(key: &Key) -> Option<(i32, i32)> {

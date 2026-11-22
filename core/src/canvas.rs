@@ -10,6 +10,13 @@ const LABEL_SCALE: u32 = 2;
 const LABEL_PADDING: u32 = 4;
 const LABEL_GAP: u32 = 4;
 const GLYPH_ADVANCE: u32 = GLYPH_WIDTH + 1;
+const LOUPE_REACH: i32 = 7;
+const LOUPE_ZOOM: u32 = 8;
+const LOUPE_OFFSET: i32 = 24;
+const LOUPE_FRAME: u32 = 1;
+const LOUPE_SIZE: u32 = (2 * LOUPE_REACH as u32 + 1) * LOUPE_ZOOM + 2 * LOUPE_FRAME;
+const LOUPE_OUTSIDE: u32 = 0x0000_0000;
+const LOUPE_MARKER: u32 = 0x00FF_FFFF;
 
 /// XRGB pixels of the overlay in frame-local coordinates, with the origin at the
 /// top-left corner of the frozen frame.
@@ -64,18 +71,46 @@ impl Canvas {
         selection.union(self.label_box(selection))
     }
 
+    /// Where the magnifier for `cursor` is drawn: beside the cursor, flipped to the
+    /// other side near the right or bottom edge.
+    pub fn loupe_box(&self, cursor: (i32, i32)) -> Rect {
+        let place = |at: i32, limit: u32| {
+            let after = at + LOUPE_OFFSET;
+            if after + LOUPE_SIZE as i32 <= limit as i32 {
+                after
+            } else {
+                (at - LOUPE_OFFSET - LOUPE_SIZE as i32).max(0)
+            }
+        };
+        Rect {
+            x: place(cursor.0, self.width),
+            y: place(cursor.1, self.height),
+            w: LOUPE_SIZE,
+            h: LOUPE_SIZE,
+        }
+    }
+
     /// Redraws `area`: dimmed frame outside `selection`, untouched frame inside it,
-    /// then the selection border and its size label, clipped to `area`.
-    pub fn paint(&mut self, frame: &Frame, selection: Option<Rect>, area: Rect) {
+    /// the selection border and its size label, then the magnifier around `loupe`,
+    /// clipped to `area`.
+    pub fn paint(
+        &mut self,
+        frame: &Frame,
+        selection: Option<Rect>,
+        loupe: Option<(i32, i32)>,
+        area: Rect,
+    ) {
         let Some(area) = self.area().intersection(area) else {
             return;
         };
         self.restore(frame, selection, area);
-        let Some(selection) = selection else {
-            return;
-        };
-        self.draw_border(selection, area);
-        self.draw_label(selection, area);
+        if let Some(selection) = selection {
+            self.draw_border(selection, BORDER_COLOR, area);
+            self.draw_label(selection, area);
+        }
+        if let Some(cursor) = loupe {
+            self.draw_loupe(frame, cursor, area);
+        }
     }
 
     fn restore(&mut self, frame: &Frame, selection: Option<Rect>, area: Rect) {
@@ -101,20 +136,50 @@ impl Canvas {
         }
     }
 
-    fn draw_border(&mut self, selection: Rect, clip: Rect) {
-        if selection.w == 0 || selection.h == 0 {
+    fn draw_border(&mut self, rect: Rect, color: u32, clip: Rect) {
+        if rect.w == 0 || rect.h == 0 {
             return;
         }
-        let last_x = selection.x + selection.w as i32 - 1;
-        let last_y = selection.y + selection.h as i32 - 1;
-        for x in selection.x..=last_x {
-            self.set(x, selection.y, BORDER_COLOR, clip);
-            self.set(x, last_y, BORDER_COLOR, clip);
+        let last_x = rect.x + rect.w as i32 - 1;
+        let last_y = rect.y + rect.h as i32 - 1;
+        for x in rect.x..=last_x {
+            self.set(x, rect.y, color, clip);
+            self.set(x, last_y, color, clip);
         }
-        for y in selection.y..=last_y {
-            self.set(selection.x, y, BORDER_COLOR, clip);
-            self.set(last_x, y, BORDER_COLOR, clip);
+        for y in rect.y..=last_y {
+            self.set(rect.x, y, color, clip);
+            self.set(last_x, y, color, clip);
         }
+    }
+
+    /// Draws the original pixels around `cursor` enlarged, with the pixel under the
+    /// cursor outlined. Pixels beyond the frame are drawn black.
+    fn draw_loupe(&mut self, frame: &Frame, cursor: (i32, i32), clip: Rect) {
+        let loupe = self.loupe_box(cursor);
+        if clip.intersection(loupe).is_none() {
+            return;
+        }
+        self.draw_border(loupe, BORDER_COLOR, clip);
+        let source = frame.rgba();
+        let cell = |dx: i32, dy: i32| Rect {
+            x: loupe.x + LOUPE_FRAME as i32 + (dx + LOUPE_REACH) * LOUPE_ZOOM as i32,
+            y: loupe.y + LOUPE_FRAME as i32 + (dy + LOUPE_REACH) * LOUPE_ZOOM as i32,
+            w: LOUPE_ZOOM,
+            h: LOUPE_ZOOM,
+        };
+        for dy in -LOUPE_REACH..=LOUPE_REACH {
+            for dx in -LOUPE_REACH..=LOUPE_REACH {
+                let (x, y) = (cursor.0 + dx, cursor.1 + dy);
+                let color = if self.area().contains(x, y) {
+                    let index = (y as usize * self.width as usize + x as usize) * 4;
+                    xrgb(source[index], source[index + 1], source[index + 2])
+                } else {
+                    LOUPE_OUTSIDE
+                };
+                self.fill(cell(dx, dy), color, clip);
+            }
+        }
+        self.draw_border(cell(0, 0), LOUPE_MARKER, clip);
     }
 
     fn draw_label(&mut self, selection: Rect, clip: Rect) {
@@ -225,7 +290,7 @@ mod tests {
         let frame = frame(60, 80, [200, 100, 50]);
         let mut canvas = Canvas::new(&frame);
 
-        canvas.paint(&frame, Some(selection()), canvas.area());
+        canvas.paint(&frame, Some(selection()), None, canvas.area());
 
         assert_eq!(at(&canvas, 15, 45), SOURCE);
         assert_eq!(at(&canvas, 5, 45), DIMMED);
@@ -237,7 +302,7 @@ mod tests {
         let frame = frame(60, 80, [200, 100, 50]);
         let mut canvas = Canvas::new(&frame);
 
-        canvas.paint(&frame, Some(selection()), canvas.area());
+        canvas.paint(&frame, Some(selection()), None, canvas.area());
 
         assert_eq!(at(&canvas, 10, 45), BORDER_COLOR);
         assert_eq!(at(&canvas, 29, 45), BORDER_COLOR);
@@ -305,7 +370,7 @@ mod tests {
             h: 30,
         };
 
-        canvas.paint(&frame, Some(selection), canvas.area());
+        canvas.paint(&frame, Some(selection), None, canvas.area());
 
         let label = canvas.label_box(selection);
         let mut box_pixels = Vec::new();
@@ -340,14 +405,14 @@ mod tests {
         };
 
         let mut incremental = Canvas::new(&frame);
-        incremental.paint(&frame, Some(first), incremental.area());
+        incremental.paint(&frame, Some(first), None, incremental.area());
         let dirty = incremental
             .footprint(first)
             .union(incremental.footprint(second));
-        incremental.paint(&frame, Some(second), dirty);
+        incremental.paint(&frame, Some(second), None, dirty);
 
         let mut full = Canvas::new(&frame);
-        full.paint(&frame, Some(second), full.area());
+        full.paint(&frame, Some(second), None, full.area());
 
         assert_eq!(incremental.pixels(), full.pixels());
     }
@@ -361,6 +426,7 @@ mod tests {
         canvas.paint(
             &frame,
             None,
+            None,
             Rect {
                 x: 50,
                 y: 50,
@@ -370,5 +436,79 @@ mod tests {
         );
 
         assert_eq!(canvas.pixels(), before);
+    }
+    fn spot_frame() -> Frame {
+        let (w, h) = (400, 300);
+        let mut rgba = [10, 20, 30, 255].repeat(w * h);
+        let spot = (60 * w + 50) * 4;
+        rgba[spot..spot + 4].copy_from_slice(&[250, 0, 0, 255]);
+        Frame::new(
+            Rect {
+                x: 0,
+                y: 0,
+                w: w as u32,
+                h: h as u32,
+            },
+            rgba,
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn loupe_enlarges_the_original_pixel_under_the_cursor_and_outlines_it() {
+        let frame = spot_frame();
+        let mut canvas = Canvas::new(&frame);
+
+        canvas.paint(&frame, None, Some((50, 60)), canvas.area());
+
+        let loupe = canvas.loupe_box((50, 60));
+        assert_eq!((loupe.x, loupe.y), (50 + LOUPE_OFFSET, 60 + LOUPE_OFFSET));
+        let center_x = (loupe.x + LOUPE_FRAME as i32 + LOUPE_REACH * LOUPE_ZOOM as i32) as u32;
+        let center_y = (loupe.y + LOUPE_FRAME as i32 + LOUPE_REACH * LOUPE_ZOOM as i32) as u32;
+        assert_eq!(at(&canvas, center_x, center_y), LOUPE_MARKER);
+        assert_eq!(at(&canvas, center_x + 3, center_y + 3), 250 << 16);
+        assert_eq!(
+            at(&canvas, center_x + LOUPE_ZOOM + 3, center_y + 3),
+            10 << 16 | 20 << 8 | 30
+        );
+        assert_eq!(at(&canvas, loupe.x as u32, loupe.y as u32), BORDER_COLOR);
+    }
+
+    #[test]
+    fn loupe_flips_to_the_other_side_near_the_right_and_bottom_edges() {
+        let canvas = Canvas::new(&spot_frame());
+
+        let loupe = canvas.loupe_box((395, 295));
+
+        assert_eq!(loupe.x, 395 - LOUPE_OFFSET - LOUPE_SIZE as i32);
+        assert_eq!(loupe.y, 295 - LOUPE_OFFSET - LOUPE_SIZE as i32);
+    }
+
+    #[test]
+    fn loupe_draws_pixels_beyond_the_frame_black() {
+        let frame = spot_frame();
+        let mut canvas = Canvas::new(&frame);
+
+        canvas.paint(&frame, None, Some((0, 0)), canvas.area());
+
+        let loupe = canvas.loupe_box((0, 0));
+        let inner = (loupe.x + LOUPE_FRAME as i32 + 1) as u32;
+        assert_eq!(at(&canvas, inner, inner), LOUPE_OUTSIDE);
+    }
+
+    #[test]
+    fn repainting_the_old_and_new_loupe_boxes_equals_a_full_repaint() {
+        let frame = spot_frame();
+        let mut incremental = Canvas::new(&frame);
+        incremental.paint(&frame, None, Some((40, 50)), incremental.area());
+        let dirty = incremental
+            .loupe_box((40, 50))
+            .union(incremental.loupe_box((90, 20)));
+        incremental.paint(&frame, None, Some((90, 20)), dirty);
+
+        let mut full = Canvas::new(&frame);
+        full.paint(&frame, None, Some((90, 20)), full.area());
+
+        assert_eq!(incremental.pixels(), full.pixels());
     }
 }
