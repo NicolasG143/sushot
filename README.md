@@ -27,6 +27,8 @@ Para guardar en lugar de copiar, sumá `Alt` a cualquier atajo.
 
 Cualquier otra combinación se ignora y pasa al sistema.
 
+> En Windows, `Alt` izquierdo + `Shift` izquierdo + `Impr Pant` es además el atajo del sistema para el Contraste alto, y Windows lo procesa antes que klip. Usá `Alt` o `Shift` derechos, o desactivá ese atajo en Configuración > Accesibilidad > Temas de contraste.
+
 ### Durante la selección
 
 | Acción | Resultado |
@@ -129,6 +131,7 @@ Objetivos de diseño de la versión 1. Las mediciones de cada release se registr
 | Ventana elevada (administrador) con el foco | Los atajos pueden no dispararse |
 | Pantalla bloqueada o escritorio seguro de UAC | No se captura; falla en silencio |
 | Windows 11 con Impr Pant asociada a Recortes | klip tiene prioridad y lo avisa en el primer arranque |
+| `Alt` + `Shift` izquierdos + `Impr Pant` en Windows | También activa el Contraste alto; klip lo avisa en el primer arranque |
 | Wayland | Las capacidades dependen del compositor |
 
 ## Qué no hace
