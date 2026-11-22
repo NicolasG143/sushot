@@ -33,6 +33,9 @@ pub trait Platform {
     /// Bounds of the monitor under the cursor, in virtual desktop coordinates.
     fn monitor_at_cursor(&self) -> Result<Rect, PlatformError>;
 
+    /// Replaces the clipboard contents with `image`.
+    fn copy_image(&self, image: &Frame) -> Result<(), PlatformError>;
+
     /// Starts delivering an `Action` for every recognized Print Screen combination.
     /// Delivery stops once the receiving end of `actions` is dropped.
     fn register_hotkeys(&self, actions: Sender<Action>) -> Result<(), PlatformError>;

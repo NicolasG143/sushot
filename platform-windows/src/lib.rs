@@ -1,6 +1,8 @@
 #![cfg(windows)]
 
 mod capture;
+mod clipboard;
+mod dib_v5;
 mod error;
 mod hotkeys;
 mod monitor;
@@ -20,6 +22,10 @@ impl Platform for WindowsPlatform {
 
     fn monitor_at_cursor(&self) -> Result<Rect, PlatformError> {
         monitor::monitor_at_cursor()
+    }
+
+    fn copy_image(&self, image: &Frame) -> Result<(), PlatformError> {
+        clipboard::write_image(image)
     }
 
     fn register_hotkeys(&self, actions: Sender<Action>) -> Result<(), PlatformError> {

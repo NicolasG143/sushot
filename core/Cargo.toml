@@ -6,4 +6,4 @@ edition.workspace = true
 publish.workspace = true
 
 [dependencies]
-png = "0.18.1"
+png = { workspace = true }
