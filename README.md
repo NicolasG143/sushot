@@ -2,7 +2,7 @@
 
 Capturador de pantalla ultra liviano para Windows y Linux. Vive en la bandeja del sistema, responde a `Impr Pant` y entrega la captura en el portapapeles o en un archivo PNG. Sin editor, sin cuentas, sin red.
 
-> **Estado:** este README describe la versión 1 terminada. El avance real está en [ROADMAP.md](ROADMAP.md) y el detalle técnico en [SPECS.md](SPECS.md). Los valores de rendimiento son objetivos de diseño, no mediciones.
+> **Estado:** este README describe la versión 1 terminada. Hoy solo funciona `Ctrl + Impr Pant` (pantalla completa al portapapeles) en Windows. El avance real está en [ROADMAP.md](ROADMAP.md), lo pendiente en [TODO.md](TODO.md) y el detalle técnico en [SPECS.md](SPECS.md). Los valores de rendimiento son objetivos de diseño, no mediciones.
 
 ## Uso rápido
 
@@ -132,24 +132,24 @@ klip no incluye editor de anotaciones, captura de video o GIF, captura con scrol
 
 ## Compilar desde el código
 
-Requiere el toolchain estable de Rust.
+Requiere el toolchain estable de Rust. En Windows, el CRT estático ya está configurado en `.cargo/config.toml`.
 
 ```sh
-# Linux
-cargo build --release
-```
-
-```powershell
-# Windows (CRT estático)
-$env:RUSTFLAGS = "-C target-feature=+crt-static"
 cargo build --release
 ```
 
 Verificaciones:
 
 ```sh
-cargo test          # tests unitarios del core
-cargo deny check    # auditoría de licencias de dependencias
+cargo test --workspace     # tests unitarios y de captura
+cargo deny check           # auditoría de licencias de dependencias
+cargo about generate about.hbs -o THIRD_PARTY_LICENSES
+```
+
+La prueba de extremo a extremo de Windows no corre por defecto: envía un `Ctrl + Impr Pant` real y sobrescribe el portapapeles.
+
+```sh
+cargo test -p klip --test full_screen_to_clipboard -- --ignored
 ```
 
 ## Arquitectura
