@@ -4,6 +4,7 @@ description = "Ultra-lightweight screenshot utility"
 version.workspace = true
 edition.workspace = true
 publish.workspace = true
+license-file.workspace = true
 
 [dependencies]
 klip-core = { workspace = true }

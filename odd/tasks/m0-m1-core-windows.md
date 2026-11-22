@@ -18,7 +18,7 @@ Delivery: one commit per checkpoint; push and PR slicing stay with the user. Tes
 | T0 | Baseline docs on the feature branch | S5 | inline | done | 22cf563 |
 | T1 | Cargo workspace, four crates, release profile | S2, S3 | inline | done | d55b9be |
 | T2 | `cargo deny` policy and `cargo about` generation | S2, S3 | inline | done | d71d631 |
-| T3 | License choice and name availability | S2 | inline | needs user decision | — |
+| T3 | License choice and name availability | S2 | inline | license done; name needs user decision | license commit |
 | T4 | `klip-core`: `resolve()`, `Rect`, `Frame` crop, `Platform` trait, PNG encode, tests | S1, S2 | inline | done | 4f8c89b, 7a514cc |
 | T5 | `klip-platform-windows`: GDI capture and monitor under cursor | S1, S2 | inline | done | 78ccfb3 |
 | T6 | `klip-platform-windows`: `WH_KEYBOARD_LL` hook | S1, S2 | inline | done | 78ccfb3 |
@@ -38,3 +38,5 @@ Delivery: one commit per checkpoint; push and PR slicing stay with the user. Tes
 - **L9** Not verified: paste into Paint and a browser, Snipping Tool suppression on Windows 11, multi-monitor and mixed DPI. Recorded in `TODO.md`.
 - **L10** Commit 7a514cc carries a `Cargo.lock` that already listed app dependencies not yet declared at that commit; later commits are consistent.
 - **L11** Open for the user: source license (PolyForm Noncommercial 1.0.0 or BSL 1.1), product name conflict found in a preliminary search, confirmation of the `unicode-ident` license exception.
+- **L12** (2026-11-22) User decision on the license, verbatim: "La licencia que veas correcta. Mi objetivo es source available y solo yo puedo vender/distribuir."
+- **L13** Chosen: PolyForm Strict 1.0.0, text copied verbatim from the official repository. Checked against the official texts: PolyForm Noncommercial 1.0.0 grants third parties a license to distribute copies, and BSL 1.1 grants redistribution and converts to the change license by the fourth anniversary at the latest; PolyForm Strict excludes distribution and changes. It has no SPDX identifier, so the manifests use `license-file`. Follow-ups in `TODO.md`: buyer terms, contributor agreement, copyright holder, legal review. Still open: product name, `unicode-ident` exception.

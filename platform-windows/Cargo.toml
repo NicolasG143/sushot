@@ -4,6 +4,7 @@ description = "Windows backend for klip"
 version.workspace = true
 edition.workspace = true
 publish.workspace = true
+license-file.workspace = true
 
 [target.'cfg(windows)'.dependencies]
 klip-core = { workspace = true }

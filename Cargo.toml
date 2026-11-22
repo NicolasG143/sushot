@@ -6,6 +6,7 @@ members = ["core", "app", "platform-windows", "platform-linux"]
 version = "0.1.0"
 edition = "2024"
 publish = false
+license-file = "LICENSE"
 
 [workspace.dependencies]
 klip-core = { path = "core" }

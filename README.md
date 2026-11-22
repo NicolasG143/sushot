@@ -172,6 +172,14 @@ El `core` no conoce el sistema operativo: cada plataforma implementa el trait `P
 
 ## Licencia
 
-Código *source-available*: se puede leer y compilar, no revender. La licencia aplicable está en [`LICENSE`](LICENSE) y las de terceros en `THIRD_PARTY_LICENSES`.
+El código se publica bajo [PolyForm Strict 1.0.0](LICENSE). Es *source-available*, no open source.
 
-Las contribuciones externas requieren firmar un CLA. El nombre y el logo de klip no están cubiertos por la licencia del código.
+| Permitido | Reservado al titular |
+|---|---|
+| Leer el código | Distribuir el código o los binarios |
+| Compilarlo y usarlo con fines no comerciales | Venderlo o usarlo con fines comerciales |
+| | Modificarlo o crear obras derivadas |
+
+Este resumen no reemplaza el texto de la licencia. Las licencias de terceros están en `THIRD_PARTY_LICENSES`.
+
+Las contribuciones externas requieren un acuerdo previo (CLA) que también autorice a modificar el código. El nombre y el logo de klip no están cubiertos por la licencia del código.
