@@ -1,0 +1,6 @@
+[package]
+name = "klip-platform-windows"
+description = "Windows backend for klip"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true

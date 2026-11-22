@@ -1,0 +1,20 @@
+[workspace]
+resolver = "3"
+members = ["core", "app", "platform-windows", "platform-linux"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[workspace.dependencies]
+klip-core = { path = "core" }
+klip-platform-windows = { path = "platform-windows" }
+klip-platform-linux = { path = "platform-linux" }
+
+[profile.release]
+opt-level = "z"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
