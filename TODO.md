@@ -14,9 +14,17 @@ Pending, deferred or known-incomplete work. Milestones are tracked in `ROADMAP.m
 - Manually confirm the rest of the M1 exit criterion: paste a `Ctrl + Print Screen` capture into Paint and into a browser, and check on Windows 11 that Snipping Tool does not open while "Use the Print screen key to open screen capture" is enabled.
 - Verify coordinates on two monitors with different DPI scaling and a negative virtual desktop origin. Only a single 1920x1080 monitor was available.
 - `SPECS.md` sections 7.1 and 10 still list `arboard` for the Windows clipboard and `xcap` as a capture option. The implementation uses Win32 directly for both; update the spec once the decision is confirmed.
-- `Platform` declares only the operations M1 uses. `window_rect_at` (M2) and `set_autostart` (M4) are not part of the trait yet.
-- The keyboard hook swallows all six valid combinations, but only `Ctrl + Print Screen` produces a capture. Region and window modes (M2) and the save dialog output (M3) are logged as not available.
+- `Platform` does not declare `set_autostart` yet (M4).
+- The keyboard hook swallows all six valid combinations. Region and window modes work with the clipboard output; the save dialog output (M3) is reported as not available.
 - klip can only be stopped by ending the process until the tray menu exists (M4).
 - Logs go to stderr in debug builds and to the debugger output channel in every build. There is no log file.
 - The `klip` binary fails to compile for non-Windows targets until the Linux backend exists (M6).
 - Idle memory of the release build was 6.5 MB of working set and 1.1 MB of private bytes in a single informal reading. The goal in `SPECS.md` section 12 is under 5 MB without naming the metric; define it and measure properly in M5.
+
+## M2 – Selection overlay
+
+- Verify the overlay on two monitors with different DPI scaling and a negative virtual desktop origin. Only a single 1920x1080 monitor was available. The overlay is placed with `SetWindowPos` in physical pixels and answers `ScaleFactorChanged` by requesting the desktop size again, but this path is untested.
+- Measure the 60 FPS drag requirement. Redraws repaint and copy only the dirty rectangle, but no frame time was measured.
+- The overlay appeared after about 82 ms in the end-to-end test, including the 20 ms polling granularity of the test. The 100 ms budget has little margin; profile `grab_virtual_desktop` and window creation on larger desktops.
+- Window mode skips click-through layered windows, cloaked windows and minimized windows, and otherwise picks the topmost visible top-level window, which can be the desktop shell window when no application is under the cursor.
+- The end-to-end overlay tests inject real mouse and keyboard input, so a physical mouse movement during the run makes them fail. Run them without touching the mouse.
