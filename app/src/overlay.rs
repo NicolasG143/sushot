@@ -101,6 +101,9 @@ impl Overlay {
                 log::trace!("cursor at {position:?}");
                 self.interaction
                     .move_to((position.x.round() as i32, position.y.round() as i32));
+                if !self.cursor_known && self.interaction.mode() == Mode::Region {
+                    self.window.set_cursor_visible(false);
+                }
                 self.cursor_known = true;
                 if self.interaction.mode() == Mode::Window {
                     self.interaction.hover(self.window_under_cursor(platform));
