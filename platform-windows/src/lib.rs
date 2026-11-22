@@ -1,5 +1,7 @@
 #![cfg(windows)]
 
+mod autostart;
+mod balloon;
 mod capture;
 mod clipboard;
 mod dib_v5;
@@ -7,6 +9,7 @@ mod environment;
 mod error;
 mod foreground;
 mod hotkeys;
+mod instance;
 mod monitor;
 mod snapshot_key;
 mod windows_at;
@@ -14,7 +17,7 @@ mod windows_at;
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
 
-use klip_core::{Action, Frame, LocalTime, Platform, PlatformError, Rect, WindowId};
+use klip_core::{Action, Frame, InstanceGuard, LocalTime, Platform, PlatformError, Rect, WindowId};
 
 /// Coordinates are physical pixels only when the process is per-monitor DPI aware.
 pub struct WindowsPlatform;
@@ -52,6 +55,18 @@ impl Platform for WindowsPlatform {
         environment::pictures_dir()
     }
 
+    fn set_autostart(&self, enabled: bool) -> Result<(), PlatformError> {
+        autostart::set(enabled)
+    }
+
+    fn claim_instance(&self) -> Result<Option<InstanceGuard>, PlatformError> {
+        Ok(instance::claim(instance::SINGLE_INSTANCE_NAME)?.map(InstanceGuard::new))
+    }
+
+    fn unregister_hotkeys(&self) {
+        hotkeys::unregister();
+    }
+
     fn copy_image(&self, image: &Frame) -> Result<(), PlatformError> {
         clipboard::write_image(image)
     }
@@ -59,4 +74,14 @@ impl Platform for WindowsPlatform {
     fn register_hotkeys(&self, actions: Sender<Action>) -> Result<(), PlatformError> {
         hotkeys::register(actions)
     }
+}
+
+/// Shows a notification from the tray icon identified by its window and icon id.
+pub fn show_tray_notification(
+    window: isize,
+    icon_id: u32,
+    title: &str,
+    text: &str,
+) -> Result<(), PlatformError> {
+    balloon::show(window, icon_id, title, text)
 }

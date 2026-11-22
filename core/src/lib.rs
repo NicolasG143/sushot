@@ -17,4 +17,4 @@ pub use encode::{encode_png, write_png};
 pub use filename::{LocalTime, default_file_name};
 pub use frame::{Frame, FrameError};
 pub use geometry::Rect;
-pub use platform::{Platform, PlatformError, WindowId};
+pub use platform::{InstanceGuard, Platform, PlatformError, WindowId};
