@@ -18,7 +18,7 @@ Pending, deferred or known-incomplete work. Milestones are tracked in `ROADMAP.m
 - The keyboard hook swallows all six valid combinations. Region and window modes work with the clipboard output; the save dialog output (M3) is reported as not available.
 - Logs go to stderr in debug builds and to the debugger output channel in every build. There is no log file.
 - The `klip` binary fails to compile for non-Windows targets until the Linux backend exists (M6).
-- Idle memory of the release build was 6.5 MB of working set and 1.1 MB of private bytes in a single informal reading. The goal in `SPECS.md` section 12 is under 5 MB without naming the metric; define it and measure properly in M5.
+- The idle memory goal in `SPECS.md` section 12 is under 5 MB without naming the metric. Private bytes (1.8 MB) meet it and working set (10.3 MB) does not; decide which one counts. See `METRICS.md`.
 
 ## M2 – Selection overlay
 
@@ -42,3 +42,14 @@ Pending, deferred or known-incomplete work. Milestones are tracked in `ROADMAP.m
 - The first-run notice appears when `config.toml` does not exist yet, on every Windows version, and its text mentions Windows 11. It was launched but not seen on screen.
 - The MSIX build must use the `StartupTask` instead of the `Run` registry key (`SPECS.md` section 9.1); `set_autostart` only handles the `Run` key.
 - `show_toast` and `autostart` are read from `config.toml` at use time or at startup; there is no file watcher, so edits take effect on the next copy or restart.
+
+## M5 – Packaging and release
+
+- Fill the placeholders in `packaging/msix/AppxManifest.xml` (`Identity` name and publisher, publisher display name) with the values Partner Center assigns, and replace the generated logos if a final brand exists. The name conflict recorded in M0 must be settled first.
+- Install the signed MSIX and confirm the global keyboard hook works in the packaged, full-trust environment, and that the `StartupTask` toggle works (`set_startup_task` was only compiled, never run packaged). Installing needs a trusted signing certificate, which was not available.
+- Sign the executable and the package (code signing certificate or Azure Trusted Signing). `packaging/build-msix.ps1` signs when given a `.pfx`.
+- Complete the manual matrix: Windows 10 and 11, one and two monitors, DPI 100 %, 125 %, 150 % and mixed. Only Windows 11 at 100 % with one monitor was available.
+- Verify pasting into Paint, Word, Slack, Discord, a browser and image editors.
+- Publish to the Microsoft Store, enable the direct download and build the landing page with the payment gateway (`SPECS.md` section 13.3). These need accounts and decisions that belong to the owner: Partner Center, a payment provider, the buyer terms listed under M0 and the domain.
+- The stability test covers capture and clipboard in-process. A run of 1000 captures through the tray, overlay and hotkey path was not done because it would need 1000 injected key presses on the user's desktop.
+- Native image editors may prefer other clipboard formats than `PNG` and `CF_DIBV5`; this was not checked.

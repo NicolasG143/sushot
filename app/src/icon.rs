@@ -38,7 +38,7 @@ fn inside_rounded_square(x: u32, y: u32, size: u32) -> bool {
 
 fn on_viewfinder(x: u32, y: u32, size: u32) -> bool {
     let inset = size / 4;
-    let reach = size / 4;
+    let reach = size / 6;
     let thickness = (size / 10).max(1);
     let far = size - 1 - inset;
     let near_edge = |value: u32| (inset..inset + thickness).contains(&value);
