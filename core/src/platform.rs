@@ -3,7 +3,7 @@ use std::fmt;
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
 
-use crate::{Action, Frame, LocalTime, Mode, Rect};
+use crate::{Action, Frame, HotkeyKey, LocalTime, Mode, Rect};
 
 /// Native handle of a top-level window, as the platform reports it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -103,5 +103,9 @@ pub trait Platform {
 
     /// Starts delivering an `Action` for every recognized Print Screen combination.
     /// Delivery stops once the receiving end of `actions` is dropped.
-    fn register_hotkeys(&self, actions: Sender<Action>) -> Result<(), PlatformError>;
+    fn register_hotkeys(
+        &self,
+        key: HotkeyKey,
+        actions: Sender<Action>,
+    ) -> Result<(), PlatformError>;
 }

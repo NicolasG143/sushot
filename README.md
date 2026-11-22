@@ -98,6 +98,7 @@ La configuración es un archivo TOML que klip recrea con valores por defecto si 
 |---|---|---|
 | `autostart` | Iniciar klip con el sistema | Desactivado |
 | `last_save_dir` | Carpeta inicial del diálogo de guardado | Imágenes del usuario |
+| `hotkey` | Tecla base de los atajos: `PrintScreen`, `Pause`, `ScrollLock` o `F1` a `F24`. Ctrl, Shift y Alt conservan su función. Se aplica al reiniciar klip | `PrintScreen` |
 | `show_toast` | Notificación al copiar | Desactivado |
 
 Solo corre una instancia a la vez; una segunda termina en silencio.

@@ -2,7 +2,7 @@ use std::sync::mpsc::Sender;
 use std::sync::{Mutex, MutexGuard, PoisonError};
 use std::thread::{self, JoinHandle};
 
-use klip_core::{Action, PlatformError, resolve};
+use klip_core::{Action, HotkeyKey, PlatformError, resolve};
 use x11rb::COPY_DEPTH_FROM_PARENT;
 use x11rb::connection::Connection;
 use x11rb::protocol::Event;
@@ -14,8 +14,7 @@ use x11rb::rust_connection::RustConnection;
 
 use crate::x11::{X11, fail};
 
-const KEYSYM_PRINT: u32 = 0xff61;
-const INSTALL: &str = "grab Print Screen";
+const INSTALL: &str = "grab the capture key";
 
 struct Listener {
     stop_window: Window,
@@ -28,9 +27,9 @@ fn lock() -> MutexGuard<'static, Option<Listener>> {
     LISTENER.lock().unwrap_or_else(PoisonError::into_inner)
 }
 
-pub(crate) fn register(actions: Sender<Action>) -> Result<(), PlatformError> {
+pub(crate) fn register(key: HotkeyKey, actions: Sender<Action>) -> Result<(), PlatformError> {
     let server = X11::connect()?;
-    let keycode = print_keycode(&server.conn)?;
+    let keycode = key_keycode(&server.conn, key)?;
     for (modifiers, _) in modifier_combinations() {
         for locks in lock_variants() {
             server
@@ -80,7 +79,7 @@ pub(crate) fn register(actions: Sender<Action>) -> Result<(), PlatformError> {
         log::warn!("hotkeys were already registered; stopping the previous listener");
         stop(previous);
     }
-    log::info!("Print Screen grabbed on the X root window");
+    log::info!("{key} grabbed on the X root window");
     Ok(())
 }
 
@@ -132,7 +131,7 @@ fn listen(server: X11, keycode: Keycode, stop_window: Window, actions: Sender<Ac
         }
     }
     if let Err(error) = server.conn.ungrab_key(0, server.root, ModMask::ANY) {
-        log::warn!("Print Screen was not released: {error}");
+        log::warn!("capture key was not released: {error}");
     }
     if let Err(error) = server.conn.flush() {
         log::warn!("X requests were not flushed on exit: {error}");
@@ -176,7 +175,8 @@ fn lock_variants() -> [u16; 4] {
     [0, caps, num, caps | num]
 }
 
-fn print_keycode(conn: &RustConnection) -> Result<Keycode, PlatformError> {
+fn key_keycode(conn: &RustConnection, key: HotkeyKey) -> Result<Keycode, PlatformError> {
+    let keysym = key.x11_keysym();
     let setup = conn.setup();
     let first = setup.min_keycode;
     let count = setup.max_keycode - first + 1;
@@ -189,9 +189,9 @@ fn print_keycode(conn: &RustConnection) -> Result<Keycode, PlatformError> {
     mapping
         .keysyms
         .chunks(per_keycode)
-        .position(|symbols| symbols.contains(&KEYSYM_PRINT))
+        .position(|symbols| symbols.contains(&keysym))
         .map(|index| first + index as u8)
-        .ok_or_else(|| PlatformError::new(INSTALL, "the keyboard has no Print Screen key"))
+        .ok_or_else(|| PlatformError::new(INSTALL, format!("the keyboard has no {key} key")))
 }
 
 #[cfg(test)]

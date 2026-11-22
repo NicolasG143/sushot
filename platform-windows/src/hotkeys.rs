@@ -3,11 +3,11 @@ use std::sync::Mutex;
 use std::sync::mpsc::{self, Sender};
 use std::thread::{self, JoinHandle};
 
-use klip_core::{Action, PlatformError};
+use klip_core::{Action, HotkeyKey, PlatformError};
 use windows::Win32::Foundation::{LPARAM, LRESULT, WPARAM};
 use windows::Win32::System::Threading::GetCurrentThreadId;
 use windows::Win32::UI::Input::KeyboardAndMouse::{
-    GetAsyncKeyState, VIRTUAL_KEY, VK_CONTROL, VK_MENU, VK_SHIFT, VK_SNAPSHOT,
+    GetAsyncKeyState, VIRTUAL_KEY, VK_CONTROL, VK_MENU, VK_SHIFT,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     CallNextHookEx, GetMessageW, HC_ACTION, KBDLLHOOKSTRUCT, MSG, PostQuitMessage,
@@ -23,6 +23,7 @@ const SWALLOWED: LRESULT = LRESULT(1);
 
 struct Listener {
     key: SnapshotKey,
+    watched_vk: u32,
     actions: Sender<Action>,
 }
 
@@ -37,11 +38,11 @@ thread_local! {
     static LISTENER: RefCell<Option<Listener>> = const { RefCell::new(None) };
 }
 
-pub(crate) fn register(actions: Sender<Action>) -> Result<(), PlatformError> {
+pub(crate) fn register(key: HotkeyKey, actions: Sender<Action>) -> Result<(), PlatformError> {
     let (installed_tx, installed_rx) = mpsc::channel();
     let handle = thread::Builder::new()
         .name("klip-hotkeys".into())
-        .spawn(move || run(actions, installed_tx))
+        .spawn(move || run(u32::from(key.windows_vk()), actions, installed_tx))
         .map_err(|error| PlatformError::new(INSTALL, error.to_string()))?;
 
     let id = installed_rx
@@ -77,9 +78,10 @@ fn stop(hook: HookThread) {
     }
 }
 
-fn run(actions: Sender<Action>, installed: Sender<Result<u32, PlatformError>>) {
+fn run(watched_vk: u32, actions: Sender<Action>, installed: Sender<Result<u32, PlatformError>>) {
     LISTENER.set(Some(Listener {
         key: SnapshotKey::default(),
+        watched_vk,
         actions,
     }));
 
@@ -112,7 +114,7 @@ unsafe extern "system" fn keyboard_proc(code: i32, wparam: WPARAM, lparam: LPARA
     if code == HC_ACTION as i32 {
         // SAFETY: for HC_ACTION the system passes a KBDLLHOOKSTRUCT that outlives the call.
         let event = unsafe { &*(lparam.0 as *const KBDLLHOOKSTRUCT) };
-        if event.vkCode == u32::from(VK_SNAPSHOT.0)
+        if event.vkCode == watched_vk()
             && let Some(transition) = transition_of(wparam.0 as u32)
             && swallows(transition)
         {
@@ -120,6 +122,10 @@ unsafe extern "system" fn keyboard_proc(code: i32, wparam: WPARAM, lparam: LPARA
         }
     }
     unsafe { CallNextHookEx(None, code, wparam, lparam) }
+}
+
+fn watched_vk() -> u32 {
+    LISTENER.with_borrow(|listener| listener.as_ref().map_or(0, |listener| listener.watched_vk))
 }
 
 fn transition_of(message: u32) -> Option<Transition> {

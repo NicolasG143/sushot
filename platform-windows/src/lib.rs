@@ -17,7 +17,9 @@ mod windows_at;
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
 
-use klip_core::{Action, Frame, InstanceGuard, LocalTime, Platform, PlatformError, Rect, WindowId};
+use klip_core::{
+    Action, Frame, HotkeyKey, InstanceGuard, LocalTime, Platform, PlatformError, Rect, WindowId,
+};
 
 /// Coordinates are physical pixels only when the process is per-monitor DPI aware.
 pub struct WindowsPlatform;
@@ -71,8 +73,12 @@ impl Platform for WindowsPlatform {
         clipboard::write_image(image)
     }
 
-    fn register_hotkeys(&self, actions: Sender<Action>) -> Result<(), PlatformError> {
-        hotkeys::register(actions)
+    fn register_hotkeys(
+        &self,
+        key: HotkeyKey,
+        actions: Sender<Action>,
+    ) -> Result<(), PlatformError> {
+        hotkeys::register(key, actions)
     }
 }
 

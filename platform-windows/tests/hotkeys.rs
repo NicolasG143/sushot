@@ -2,7 +2,7 @@
 
 use std::sync::mpsc;
 
-use klip_core::Platform;
+use klip_core::{HotkeyKey, Platform};
 use klip_platform_windows::WindowsPlatform;
 
 #[test]
@@ -10,7 +10,9 @@ fn hooks_can_be_removed_and_installed_again() {
     for _ in 0..2 {
         let (actions, _receiver) = mpsc::channel();
 
-        WindowsPlatform.register_hotkeys(actions).unwrap();
+        WindowsPlatform
+            .register_hotkeys(HotkeyKey::PrintScreen, actions)
+            .unwrap();
         WindowsPlatform.unregister_hotkeys();
     }
 }

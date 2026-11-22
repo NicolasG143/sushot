@@ -26,7 +26,8 @@ mod backend {
     use std::sync::mpsc::Sender;
 
     use klip_core::{
-        Action, Frame, InstanceGuard, LocalTime, Mode, Platform, PlatformError, Rect, WindowId,
+        Action, Frame, HotkeyKey, InstanceGuard, LocalTime, Mode, Platform, PlatformError, Rect,
+        WindowId,
     };
 
     use crate::x11::fail;
@@ -118,11 +119,15 @@ mod backend {
                 .map(InstanceGuard::new))
         }
 
-        fn register_hotkeys(&self, actions: Sender<Action>) -> Result<(), PlatformError> {
+        fn register_hotkeys(
+            &self,
+            key: HotkeyKey,
+            actions: Sender<Action>,
+        ) -> Result<(), PlatformError> {
             if on_wayland() {
-                portal::register_shortcuts(actions)
+                portal::register_shortcuts(key, actions)
             } else {
-                hotkeys::register(actions)
+                hotkeys::register(key, actions)
             }
         }
 

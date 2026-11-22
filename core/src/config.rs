@@ -3,11 +3,14 @@ use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
+use crate::HotkeyKey;
+
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct Config {
     pub autostart: bool,
     pub last_save_dir: Option<PathBuf>,
     pub show_toast: bool,
+    pub hotkey: HotkeyKey,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -36,7 +39,7 @@ impl Config {
             }
             let (key, value) = raw.split_once('=').ok_or(fail("expected `key = value`"))?;
             let key = key.trim();
-            if !matches!(key, "autostart" | "show_toast" | "last_save_dir") {
+            if !matches!(key, "autostart" | "show_toast" | "last_save_dir" | "hotkey") {
                 continue;
             }
             let value = parse_value(value.trim()).ok_or(fail("invalid value"))?;
@@ -47,6 +50,10 @@ impl Config {
                     config.last_save_dir = Some(PathBuf::from(dir));
                 }
                 ("last_save_dir", Value::Text(_)) => config.last_save_dir = None,
+                ("hotkey", Value::Text(name)) => {
+                    config.hotkey =
+                        HotkeyKey::from_name(&name).ok_or(fail("unknown hotkey name"))?;
+                }
                 _ => return Err(fail("value has the wrong type")),
             }
         }
@@ -59,6 +66,7 @@ impl Config {
             text.push_str(&format!("last_save_dir = {}\n", quote(dir)));
         }
         text.push_str(&format!("show_toast = {}\n", self.show_toast));
+        text.push_str(&format!("hotkey = \"{}\"\n", self.hotkey));
         text
     }
 }
@@ -218,6 +226,7 @@ mod tests {
             autostart: true,
             last_save_dir: Some(PathBuf::from(r#"C:\Users\Ana "Pics"\Imágenes"#)),
             show_toast: true,
+            hotkey: HotkeyKey::Function(9),
         };
 
         assert_eq!(Config::parse(&config.to_toml()).unwrap(), config);
@@ -244,6 +253,8 @@ mod tests {
             "last_save_dir = \"unterminated",
             "last_save_dir = \"bad \\q escape\"",
             "[section]",
+            "hotkey = \"Enter\"",
+            "hotkey = true",
         ] {
             assert!(Config::parse(text).is_err(), "{text:?} should be rejected");
         }
@@ -307,6 +318,7 @@ mod tests {
                 autostart: true,
                 last_save_dir: Some(PathBuf::from("D:\\Shots")),
                 show_toast: false,
+                hotkey: HotkeyKey::PrintScreen,
             }
         );
     }

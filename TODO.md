@@ -72,6 +72,6 @@ Pending, deferred or known-incomplete work. Milestones are tracked in `ROADMAP.m
 
 ## v1.1
 
-- Configurable shortcuts need a decision on the file format (see `ROADMAP.md`, open decisions). The hook currently resolves only `Print Screen` with Ctrl, Shift and Alt.
+- Configurable shortcuts only change the base key (`hotkey`); modifiers per action are fixed. The key is read at startup, and a changed value needs a restart. Only the Windows hook and unit tests exercised it; the X11 grab and portal trigger for other keys were not run.
 - Arrow-key nudging only works while the mouse button is held during a drag. Adjusting a region after releasing the button would require keeping the selection open until a confirm key or click, which changes the one-gesture flow.
 - Windows Arm64: `cargo build --release --target aarch64-pc-windows-msvc` compiles every crate and fails at the link step because the Visual Studio ARM64 build tools are not installed. The `aarch64-pc-windows-msvc` Rust target was added to this machine with `rustup`.

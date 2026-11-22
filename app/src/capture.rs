@@ -222,7 +222,11 @@ mod tests {
             Ok(())
         }
 
-        fn register_hotkeys(&self, _actions: Sender<Action>) -> Result<(), PlatformError> {
+        fn register_hotkeys(
+            &self,
+            _key: klip_core::HotkeyKey,
+            _actions: Sender<Action>,
+        ) -> Result<(), PlatformError> {
             Ok(())
         }
     }
