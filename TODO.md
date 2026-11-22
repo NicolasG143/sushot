@@ -53,3 +53,15 @@ Pending, deferred or known-incomplete work. Milestones are tracked in `ROADMAP.m
 - Publish to the Microsoft Store, enable the direct download and build the landing page with the payment gateway (`SPECS.md` section 13.3). These need accounts and decisions that belong to the owner: Partner Center, a payment provider, the buyer terms listed under M0 and the domain.
 - The stability test covers capture and clipboard in-process. A run of 1000 captures through the tray, overlay and hotkey path was not done because it would need 1000 injected key presses on the user's desktop.
 - Native image editors may prefer other clipboard formats than `PNG` and `CF_DIBV5`; this was not checked.
+
+## M6 – Linux X11 and M7 – Linux Wayland
+
+- Not started. There is no Linux machine (X11, GNOME Wayland or KDE Wayland) to run or verify the work, and a backend written without running it would violate the no half-finished code rule. `platform-linux` is still an empty crate and `klip` does not compile for non-Windows targets.
+- When started, the plan from `ROADMAP.md` stands: X11 hotkeys with `global-hotkey` (or `x11rb` directly, to decide), capture and monitor lookup, EWMH window rects, `arboard` clipboard, `.desktop` autostart, a lockfile in `$XDG_RUNTIME_DIR`, the XDG config path, AppImage, then the portal and CLI for Wayland.
+- The `Platform` trait already has the operations a Linux backend needs; `grant_foreground` and `claim_instance` have trivial Linux equivalents.
+
+## v1.1
+
+- Configurable shortcuts need a decision on the file format (see `ROADMAP.md`, open decisions). The hook currently resolves only `Print Screen` with Ctrl, Shift and Alt.
+- Arrow-key nudging only works while the mouse button is held during a drag. Adjusting a region after releasing the button would require keeping the selection open until a confirm key or click, which changes the one-gesture flow.
+- Windows Arm64: `cargo build --release --target aarch64-pc-windows-msvc` compiles every crate and fails at the link step because the Visual Studio ARM64 build tools are not installed. The `aarch64-pc-windows-msvc` Rust target was added to this machine with `rustup`.
