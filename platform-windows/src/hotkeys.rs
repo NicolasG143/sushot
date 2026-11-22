@@ -116,7 +116,7 @@ unsafe extern "system" fn keyboard_proc(code: i32, wparam: WPARAM, lparam: LPARA
         let event = unsafe { &*(lparam.0 as *const KBDLLHOOKSTRUCT) };
         if event.vkCode == watched_vk()
             && let Some(transition) = transition_of(wparam.0 as u32)
-            && swallows(transition)
+            && swallows(transition, event.time)
         {
             return SWALLOWED;
         }
@@ -136,12 +136,14 @@ fn transition_of(message: u32) -> Option<Transition> {
     }
 }
 
-fn swallows(transition: Transition) -> bool {
+fn swallows(transition: Transition, time_ms: u32) -> bool {
     LISTENER.with_borrow_mut(|listener| {
         let Some(listener) = listener else {
             return false;
         };
-        let verdict = listener.key.on_transition(transition, pressed_modifiers());
+        let verdict = listener
+            .key
+            .on_transition(transition, pressed_modifiers(), time_ms);
         log::debug!("hotkey {transition:?}: {verdict:?}");
         match verdict {
             Verdict::PassThrough => false,
