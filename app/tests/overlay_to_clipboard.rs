@@ -36,6 +36,28 @@ fn dragging_a_region_copies_exactly_that_area() {
 
 #[test]
 #[ignore = "sends real input and overwrites the clipboard; needs an interactive desktop"]
+fn one_press_reopens_the_overlay_after_a_region_capture() {
+    become_dpi_aware();
+    empty_clipboard();
+    let _klip = RunningKlip::start();
+
+    press_print_screen_with(&[]);
+    wait_for_overlay(true);
+    move_cursor(ORIGIN.0, ORIGIN.1);
+    left_button(true);
+    move_cursor(ORIGIN.0 + 120, ORIGIN.1 + 80);
+    left_button(false);
+    wait_for_overlay(false);
+    wait_for_copied_image();
+
+    press_print_screen_with(&[]);
+    wait_for_overlay(true);
+    tap(VK_ESCAPE);
+    wait_for_overlay(false);
+}
+
+#[test]
+#[ignore = "sends real input and overwrites the clipboard; needs an interactive desktop"]
 fn escape_closes_the_overlay_and_copies_nothing() {
     become_dpi_aware();
     empty_clipboard();

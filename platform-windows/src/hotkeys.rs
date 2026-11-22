@@ -141,7 +141,9 @@ fn swallows(transition: Transition) -> bool {
         let Some(listener) = listener else {
             return false;
         };
-        match listener.key.on_transition(transition, pressed_modifiers()) {
+        let verdict = listener.key.on_transition(transition, pressed_modifiers());
+        log::debug!("hotkey {transition:?}: {verdict:?}");
+        match verdict {
             Verdict::PassThrough => false,
             Verdict::Swallow => true,
             Verdict::Trigger(action) => {

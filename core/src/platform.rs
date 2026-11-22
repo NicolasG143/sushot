@@ -58,6 +58,11 @@ pub trait Platform {
     /// Covers `area` with `window`, raised above every other window, in physical pixels.
     fn place_overlay(&self, window: WindowId, area: Rect) -> Result<(), PlatformError>;
 
+    /// Makes the overlay placed by `place_overlay` appear once its first frame is drawn.
+    fn reveal_overlay(&self, _window: WindowId) -> Result<(), PlatformError> {
+        Ok(())
+    }
+
     /// Whether klip can draw its own selection overlay. When it cannot, selection happens
     /// in the system's UI through `capture_with_system_ui`.
     fn has_selection_overlay(&self) -> bool {

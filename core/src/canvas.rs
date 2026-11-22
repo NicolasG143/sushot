@@ -17,18 +17,25 @@ pub struct Canvas {
     width: u32,
     height: u32,
     pixels: Vec<u32>,
+    dimmed: Vec<u32>,
 }
 
 impl Canvas {
     pub fn new(frame: &Frame) -> Self {
         let bounds = frame.bounds();
-        let mut canvas = Canvas {
+        let dimmed: Vec<u32> = frame
+            .rgba()
+            .as_chunks::<4>()
+            .0
+            .iter()
+            .map(|pixel| xrgb(dim(pixel[0]), dim(pixel[1]), dim(pixel[2])))
+            .collect();
+        Canvas {
             width: bounds.w,
             height: bounds.h,
-            pixels: vec![0; bounds.w as usize * bounds.h as usize],
-        };
-        canvas.paint(frame, None, canvas.area());
-        canvas
+            pixels: dimmed.clone(),
+            dimmed,
+        }
     }
 
     pub fn width(&self) -> u32 {
@@ -72,21 +79,24 @@ impl Canvas {
     }
 
     fn restore(&mut self, frame: &Frame, selection: Option<Rect>, area: Rect) {
+        let width = self.width as usize;
+        let columns = area.x as usize..area.x as usize + area.w as usize;
+        for row in area.y as usize..area.y as usize + area.h as usize {
+            let start = row * width;
+            self.pixels[start + columns.start..start + columns.end]
+                .copy_from_slice(&self.dimmed[start + columns.start..start + columns.end]);
+        }
+        let Some(bright) = selection.and_then(|selection| selection.intersection(area)) else {
+            return;
+        };
         let source = frame.rgba();
-        for y in area.y..area.y + area.h as i32 {
-            for x in area.x..area.x + area.w as i32 {
-                let index = y as usize * self.width as usize + x as usize;
-                let pixel = &source[index * 4..index * 4 + 3];
-                let (r, g, b) = (
-                    u32::from(pixel[0]),
-                    u32::from(pixel[1]),
-                    u32::from(pixel[2]),
-                );
-                self.pixels[index] = if selection.is_some_and(|inside| inside.contains(x, y)) {
-                    r << 16 | g << 8 | b
-                } else {
-                    dim(r) << 16 | dim(g) << 8 | dim(b)
-                };
+        let columns = bright.x as usize..bright.x as usize + bright.w as usize;
+        for row in bright.y as usize..bright.y as usize + bright.h as usize {
+            let start = row * width;
+            let target = &mut self.pixels[start + columns.start..start + columns.end];
+            let source = &source[(start + columns.start) * 4..(start + columns.end) * 4];
+            for (pixel, rgba) in target.iter_mut().zip(source.as_chunks::<4>().0) {
+                *pixel = xrgb(rgba[0], rgba[1], rgba[2]);
             }
         }
     }
@@ -164,8 +174,12 @@ impl Canvas {
     }
 }
 
-fn dim(channel: u32) -> u32 {
-    channel * DIM_NUMERATOR / DIM_DENOMINATOR
+fn dim(channel: u8) -> u8 {
+    (u32::from(channel) * DIM_NUMERATOR / DIM_DENOMINATOR) as u8
+}
+
+fn xrgb(r: u8, g: u8, b: u8) -> u32 {
+    u32::from(r) << 16 | u32::from(g) << 8 | u32::from(b)
 }
 
 fn dimension_text(selection: Rect) -> String {

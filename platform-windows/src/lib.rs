@@ -41,6 +41,10 @@ impl Platform for WindowsPlatform {
         windows_at::place_overlay(window, area)
     }
 
+    fn reveal_overlay(&self, window: WindowId) -> Result<(), PlatformError> {
+        windows_at::reveal_overlay(window)
+    }
+
     fn grant_foreground(&self) {
         foreground::grant();
     }

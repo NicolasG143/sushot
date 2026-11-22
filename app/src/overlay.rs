@@ -22,7 +22,7 @@ pub(crate) struct Overlay {
     canvas: Canvas,
     interaction: Interaction,
     action: Action,
-    highlighted: Option<Rect>,
+    painted: Option<Rect>,
     pending: Option<Rect>,
     presented_once: bool,
 }
@@ -57,10 +57,7 @@ impl Overlay {
 
         let canvas = Canvas::new(&desktop);
         platform.place_overlay(native_id, bounds)?;
-        window.request_redraw();
-        log::debug!("overlay ready in {:?}", started.elapsed());
-
-        Ok(Self {
+        let mut overlay = Self {
             window,
             surface,
             native_id,
@@ -68,10 +65,14 @@ impl Overlay {
             canvas,
             interaction: Interaction::new(action.mode),
             action,
-            highlighted: None,
+            painted: None,
             pending: None,
             presented_once: false,
-        })
+        };
+        overlay.present()?;
+        platform.reveal_overlay(native_id)?;
+        log::debug!("overlay ready in {:?}", started.elapsed());
+        Ok(overlay)
     }
 
     pub(crate) fn window_id(&self) -> winit::window::WindowId {
@@ -158,25 +159,32 @@ impl Overlay {
     }
 
     fn refresh(&mut self) {
+        if self.interaction.highlight() != self.painted {
+            self.window.request_redraw();
+        }
+    }
+
+    /// Paints only at redraw time, so a burst of cursor moves costs a single paint.
+    fn paint(&mut self) {
         let highlight = self.interaction.highlight();
-        if highlight == self.highlighted {
+        if highlight == self.painted {
             return;
         }
-        let dirty = [self.highlighted, highlight]
+        let dirty = [self.painted, highlight]
             .into_iter()
             .flatten()
             .map(|area| self.canvas.footprint(area))
             .reduce(Rect::union);
-        self.highlighted = highlight;
+        self.painted = highlight;
         let Some(dirty) = dirty else {
             return;
         };
         self.canvas.paint(&self.desktop, highlight, dirty);
         self.pending = Some(self.pending.map_or(dirty, |pending| pending.union(dirty)));
-        self.window.request_redraw();
     }
 
     fn present(&mut self) -> Result<(), Box<dyn Error>> {
+        self.paint();
         if self.presented_once && self.pending.is_none() {
             return Ok(());
         }
