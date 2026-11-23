@@ -1,30 +1,23 @@
 use std::fmt;
 
-use klip_core::{Action, Mode, Output, Platform, PlatformError, Rect};
+use klip_core::{Frame, Output, Platform, PlatformError, Rect};
 
 #[derive(Debug)]
 pub(crate) enum CaptureError {
     Platform(PlatformError),
-    MonitorOutsideDesktop(Rect),
-    NotAvailable(Action),
+    AreaOutsideDesktop(Rect),
+    OutputNotAvailable(Output),
 }
 
 impl fmt::Display for CaptureError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             CaptureError::Platform(error) => error.fmt(f),
-            CaptureError::MonitorOutsideDesktop(monitor) => {
-                write!(
-                    f,
-                    "monitor {monitor:?} does not overlap the captured desktop"
-                )
+            CaptureError::AreaOutsideDesktop(area) => {
+                write!(f, "area {area:?} does not overlap the captured desktop")
             }
-            CaptureError::NotAvailable(action) => {
-                write!(
-                    f,
-                    "{:?} to {:?} is not available in this build",
-                    action.mode, action.output
-                )
+            CaptureError::OutputNotAvailable(output) => {
+                write!(f, "output {output:?} is not available in this build")
             }
         }
     }
@@ -38,16 +31,25 @@ impl From<PlatformError> for CaptureError {
     }
 }
 
-pub(crate) fn perform(platform: &impl Platform, action: Action) -> Result<(), CaptureError> {
-    match (action.mode, action.output) {
-        (Mode::FullScreen, Output::Clipboard) => {
-            let desktop = platform.grab_virtual_desktop()?;
-            let monitor = platform.monitor_at_cursor()?;
-            let capture = desktop
-                .crop(monitor)
-                .ok_or(CaptureError::MonitorOutsideDesktop(monitor))?;
-            platform.copy_image(&capture)?;
+pub(crate) fn full_screen(platform: &impl Platform, output: Output) -> Result<(), CaptureError> {
+    let desktop = platform.grab_virtual_desktop()?;
+    let monitor = platform.monitor_at_cursor()?;
+    deliver(platform, &desktop, monitor, output)
+}
 
+/// Crops `area` out of the frozen `desktop` and sends it to `output`.
+pub(crate) fn deliver(
+    platform: &impl Platform,
+    desktop: &Frame,
+    area: Rect,
+    output: Output,
+) -> Result<(), CaptureError> {
+    let capture = desktop
+        .crop(area)
+        .ok_or(CaptureError::AreaOutsideDesktop(area))?;
+    match output {
+        Output::Clipboard => {
+            platform.copy_image(&capture)?;
             let copied = capture.bounds();
             log::info!(
                 "copied a {}x{} capture to the clipboard",
@@ -56,7 +58,7 @@ pub(crate) fn perform(platform: &impl Platform, action: Action) -> Result<(), Ca
             );
             Ok(())
         }
-        _ => Err(CaptureError::NotAvailable(action)),
+        Output::SaveDialog => Err(CaptureError::OutputNotAvailable(output)),
     }
 }
 
@@ -65,7 +67,7 @@ mod tests {
     use std::cell::RefCell;
     use std::sync::mpsc::Sender;
 
-    use klip_core::Frame;
+    use klip_core::{Action, WindowId};
 
     use super::*;
 
@@ -91,11 +93,19 @@ mod tests {
 
     impl Platform for TwoMonitors {
         fn grab_virtual_desktop(&self) -> Result<Frame, PlatformError> {
-            Ok(Frame::new(DESKTOP, [LEFT_PIXELS, RIGHT_PIXELS].concat()).unwrap())
+            Ok(desktop())
         }
 
         fn monitor_at_cursor(&self) -> Result<Rect, PlatformError> {
             Ok(LEFT_MONITOR)
+        }
+
+        fn window_rect_at(&self, _x: i32, _y: i32, _exclude: WindowId) -> Option<Rect> {
+            None
+        }
+
+        fn place_overlay(&self, _window: WindowId, _area: Rect) -> Result<(), PlatformError> {
+            Ok(())
         }
 
         fn copy_image(&self, image: &Frame) -> Result<(), PlatformError> {
@@ -109,15 +119,15 @@ mod tests {
         }
     }
 
+    fn desktop() -> Frame {
+        Frame::new(DESKTOP, [LEFT_PIXELS, RIGHT_PIXELS].concat()).unwrap()
+    }
+
     #[test]
     fn full_screen_to_clipboard_copies_only_the_monitor_under_the_cursor() {
         let platform = TwoMonitors::default();
-        let action = Action {
-            mode: Mode::FullScreen,
-            output: Output::Clipboard,
-        };
 
-        perform(&platform, action).unwrap();
+        full_screen(&platform, Output::Clipboard).unwrap();
 
         assert_eq!(
             platform.copied.take(),
@@ -126,16 +136,48 @@ mod tests {
     }
 
     #[test]
-    fn action_without_an_implementation_is_reported_and_copies_nothing() {
+    fn deliver_crops_the_requested_area_out_of_the_frozen_desktop() {
         let platform = TwoMonitors::default();
-        let action = Action {
-            mode: Mode::Region,
-            output: Output::Clipboard,
+        let area = Rect {
+            x: 0,
+            y: 0,
+            w: 1,
+            h: 1,
         };
 
-        let result = perform(&platform, action);
+        deliver(&platform, &desktop(), area, Output::Clipboard).unwrap();
 
-        assert!(matches!(result, Err(CaptureError::NotAvailable(reported)) if reported == action));
+        assert_eq!(platform.copied.take(), Some((area, vec![3, 3, 3, 255])));
+    }
+
+    #[test]
+    fn deliver_reports_an_area_outside_the_desktop_and_copies_nothing() {
+        let platform = TwoMonitors::default();
+        let area = Rect {
+            x: 100,
+            y: 100,
+            w: 5,
+            h: 5,
+        };
+
+        let result = deliver(&platform, &desktop(), area, Output::Clipboard);
+
+        assert!(
+            matches!(result, Err(CaptureError::AreaOutsideDesktop(reported)) if reported == area)
+        );
+        assert_eq!(platform.copied.take(), None);
+    }
+
+    #[test]
+    fn output_without_an_implementation_is_reported_and_copies_nothing() {
+        let platform = TwoMonitors::default();
+
+        let result = full_screen(&platform, Output::SaveDialog);
+
+        assert!(matches!(
+            result,
+            Err(CaptureError::OutputNotAvailable(Output::SaveDialog))
+        ));
         assert_eq!(platform.copied.take(), None);
     }
 }

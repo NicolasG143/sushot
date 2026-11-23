@@ -9,6 +9,8 @@ license-file.workspace = true
 [dependencies]
 klip-core = { workspace = true }
 log = { workspace = true }
+softbuffer = { version = "0.4.8", default-features = false }
+winit = { version = "0.30", default-features = false, features = ["rwh_06"] }
 
 [target.'cfg(windows)'.dependencies]
 klip-platform-windows = { workspace = true }
@@ -24,6 +26,7 @@ windows = { workspace = true, features = [
     "Win32_System_Ole",
     "Win32_UI_HiDpi",
     "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_WindowsAndMessaging",
 ] }
 
 [build-dependencies]
