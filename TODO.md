@@ -5,14 +5,12 @@ Pending, deferred or known-incomplete work. Grouped by milestone.
 ## M0 – Setup
 
 - Have a lawyer review the licensing before selling. The source is under PolyForm Strict 1.0.0, which covers noncommercial use only and grants no right to distribute or modify, so two documents are still missing: commercial terms (EULA) for people who buy the binary, and a contributor agreement that both assigns or licenses contributions and permits contributors to modify the code.
-- State the copyright holder (individual or company) in the README. It is not recorded anywhere yet.
-- Confirm the product name "Sushot". The project was renamed from "Klip" on 2026-11-22 because a preliminary web search found an existing Windows clipboard and screen capture tool distributed as "Klip" (winget id `PoBruno.Klip`) and several live "KLIP" trademark registrations in software classes. The availability of "Sushot" has not been checked; confirm it in Microsoft Partner Center and with a trademark professional.
+- The owner chose on 2026-11-23 to hold the copyright as an individual under the alias "Tuty", and the README states "Copyright © 2026 Tuty". Ask the lawyer whether the EULA and the contributor agreement must also name the owner's legal name, and whether to register the work under the alias. The Partner Center individual account is opened under the same person.
+- Check the trademark availability of "Sushot" with a trademark professional. The owner confirmed the name on 2026-11-23; it replaced "Klip" on 2026-11-22 because of an existing Windows capture tool and live "KLIP" registrations in software classes.
 - Confirm the license policy exception for `unicode-ident` (`Unicode-3.0`). It is a compile-time dependency of procedural macros and is not linked into the binary, but `Unicode-3.0` is outside the allowed MIT/Apache-2.0/BSD/ISC list.
 
 ## M1 – Core and minimal Windows capture
 
-- Manually confirm the rest of the M1 exit criterion: paste a `Ctrl + Print Screen` capture into Paint and into a browser, and check on Windows 11 that Snipping Tool does not open while "Use the Print screen key to open screen capture" is enabled.
-- Verify coordinates on two monitors with different DPI scaling and a negative virtual desktop origin. Only a single 1920x1080 monitor was available.
 - `Platform` does not declare `set_autostart` yet (M4).
 - The keyboard hook swallows all six valid combinations. Region and window modes work with the clipboard output; the save dialog output (M3) is reported as not available.
 - Logs go to stderr in debug builds and to the debugger output channel in every build. There is no log file.
@@ -21,7 +19,6 @@ Pending, deferred or known-incomplete work. Grouped by milestone.
 
 ## M2 – Selection overlay
 
-- Verify the overlay on two monitors with different DPI scaling and a negative virtual desktop origin. Only a single 1920x1080 monitor was available. The overlay is placed with `SetWindowPos` in physical pixels and answers `ScaleFactorChanged` by requesting the desktop size again, but this path is untested.
 - Measure the 60 FPS drag requirement. Redraws repaint and copy only the dirty rectangle, but no frame time was measured.
 - The overlay appeared after about 82 ms in the end-to-end test, including the 20 ms polling granularity of the test. The 100 ms budget has little margin; profile `grab_virtual_desktop` and window creation on larger desktops.
 - Window mode skips click-through layered windows, cloaked windows and minimized windows, and otherwise picks the topmost visible top-level window, which can be the desktop shell window when no application is under the cursor.
@@ -36,7 +33,6 @@ Pending, deferred or known-incomplete work. Grouped by milestone.
 
 ## M4 – Tray, configuration and autostart
 
-- Manually verify the tray: menu content, the autostart checkbox, "Salir" releasing the hook and the icon, the icon flash after a copy, the optional toast with `show_toast = true`, and that autostart launches sushot after signing in again. None of this could be driven without a person at the keyboard.
 - The toast reuses the tray icon through `Shell_NotifyIconW` with the icon id 1, which is the first id `tray-icon` hands out. A newer `tray-icon` that numbers icons differently would make the toast fail with a warning in the log.
 - The first-run notice appears when `config.toml` does not exist yet, on every Windows version, and its text mentions Windows 11. It was launched but not seen on screen.
 - The MSIX build must use the `StartupTask` instead of the `Run` registry key; `set_autostart` only handles the `Run` key.
@@ -44,20 +40,20 @@ Pending, deferred or known-incomplete work. Grouped by milestone.
 
 ## M5 – Packaging and release
 
-- Fill the placeholders in `packaging/msix/AppxManifest.xml` (`Identity` name and publisher, publisher display name) with the values Partner Center assigns, and replace the generated logos if a final brand exists. The name conflict recorded in M0 must be settled first.
+- Reserve the name "Sushot" in Partner Center, fill the placeholders in `packaging/msix/AppxManifest.xml` (`Identity` name and publisher, publisher display name) with the values Partner Center assigns, and replace the generated logos if a final brand exists.
 - Install the signed MSIX and confirm the global keyboard hook works in the packaged, full-trust environment, and that the `StartupTask` toggle works (`set_startup_task` was only compiled, never run packaged). Installing needs a trusted signing certificate, which was not available.
 - Sign the executable and the package (code signing certificate or Azure Trusted Signing). `packaging/build-msix.ps1` signs when given a `.pfx`.
-- Complete the manual matrix: Windows 10 and 11, one and two monitors, DPI 100 %, 125 %, 150 % and mixed. Only Windows 11 at 100 % with one monitor was available.
-- Verify pasting into Paint, Word, Slack, Discord, a browser and image editors.
+- Run the manual checks on Windows 10. On 2026-11-23 the owner checked by hand, on Windows 11: pasting into Paint, a browser, Word and Slack, Snipping Tool suppression, the tray menu and autostart, and two monitors with mixed DPI.
+- Verify pasting into Discord and image editors.
 - Publish to the Microsoft Store, enable the direct download and build the landing page with the payment gateway. These need accounts and decisions that belong to the owner: Partner Center, a payment provider, the buyer terms listed under M0 and the domain.
 - The stability test covers capture and clipboard in-process. A run of 1000 captures through the tray, overlay and hotkey path was not done because it would need 1000 injected key presses on the user's desktop.
 - Native image editors may prefer other clipboard formats than `PNG` and `CF_DIBV5`; this was not checked.
 
 ## M6 – Linux X11 and M7 – Linux Wayland
 
-- None of the Linux code has been run. It type-checks and passes clippy for `x86_64-unknown-linux-gnu` from Windows, and the portable pieces (XDG paths, `.desktop` entry, lockfile, PNG decoding, CLI parsing, session detection, request protocol) have tests that pass on Windows. The X11 capture, key grabs, RandR, EWMH windows, `arboard` clipboard, portal screenshot, portal shortcuts, Unix socket and `ksni` tray need a real session to confirm.
-- To check Linux compilation from Windows, `x11` build scripts need `pkg-config`; a stub `pkg-config.exe` that prints `-lX11` plus `PKG_CONFIG_ALLOW_CROSS=1` was enough. A real Linux build needs the packages listed in `README.md`.
-- Unit tests that exist only for Linux (`x11.rs`, `hotkeys.rs`, `portal.rs`, `ipc.rs`) compile but were never executed.
+- On 2026-11-23 the workspace was built and tested on Ubuntu 26.04 under WSL2: `cargo test --workspace`, clippy and rustfmt pass, including the Linux-only unit tests. On an Xvfb server, `Ctrl + Print Screen` grabbed through X11 captured the full 1600x900 screen and another process (`xclip`) read the PNG from the clipboard; `sushot --full` and the Unix socket worked too. Run `cargo test -p sushot-platform-linux --test clipboard_x11 -- --ignored` with an X server in `DISPLAY` and `xclip` installed.
+- Still unverified on Linux: region and window modes with the overlay, RandR with several monitors, EWMH window picking, the save dialog, autostart, the `ksni` tray, and everything on Wayland (portal screenshot and portal shortcuts). WSLg cannot cover them: it has no `xdg-desktop-portal` or StatusNotifierItem host, and its rootless XWayland answers `GetImage` on the root window with `BadMatch` (plain `xwd -root` fails the same way). They need a real X11 desktop and a GNOME or KDE Wayland session.
+- In WSLg, `/tmp/.X11-unix` is read-only, so Xvfb only starts with `-listen tcp -nolisten unix` and `DISPLAY=127.0.0.1:<n>`.
 - Print Screen is grabbed for the six combinations with the four Caps Lock and Num Lock states. A grab fails if another client already owns the key (a desktop screenshot tool), and the error is reported at startup.
 - Under Wayland, `XGrabKey` does not receive keys outside XWayland windows, so sushot uses the `GlobalShortcuts` portal. If registering hotkeys fails for any reason, sushot logs a warning and keeps running so the CLI with a system shortcut still works; on Windows this means a failed hook leaves a tray icon with no hotkeys.
 - `capture_with_system_ui` with `Mode::Window` and `Mode::Region` both open the portal's interactive picker; the portal decides what the user can choose. The portal screenshot file is deleted after reading it.

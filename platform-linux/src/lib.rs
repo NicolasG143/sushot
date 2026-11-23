@@ -24,6 +24,7 @@ mod backend {
     use std::fs;
     use std::path::PathBuf;
     use std::sync::mpsc::Sender;
+    use std::sync::{Mutex, PoisonError};
 
     use sushot_core::{
         Action, Frame, HotkeyKey, InstanceGuard, LocalTime, Mode, Platform, PlatformError, Rect,
@@ -141,12 +142,21 @@ mod backend {
                 height: bounds.h as usize,
                 bytes: image.rgba().into(),
             };
-            arboard::Clipboard::new()
-                .map_err(fail(operation))?
-                .set_image(data)
-                .map_err(fail(operation))
+            let mut slot = CLIPBOARD.lock().unwrap_or_else(PoisonError::into_inner);
+            let mut clipboard = match slot.take() {
+                Some(clipboard) => clipboard,
+                None => arboard::Clipboard::new().map_err(fail(operation))?,
+            };
+            clipboard.set_image(data).map_err(fail(operation))?;
+            *slot = Some(clipboard);
+            Ok(())
         }
     }
+
+    /// X11 serves clipboard contents from the process that owns the selection, so the
+    /// clipboard must outlive each copy; dropping it loses the image unless a clipboard
+    /// manager happens to take it over.
+    static CLIPBOARD: Mutex<Option<arboard::Clipboard>> = Mutex::new(None);
 
     fn local_time() -> LocalTime {
         // SAFETY: `time` accepts a null pointer and `localtime_r` writes only into `parts`.

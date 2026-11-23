@@ -2,7 +2,7 @@
 
 Capturador de pantalla ultra liviano para Windows y Linux. Vive en la bandeja del sistema, responde a `Impr Pant` y entrega la captura en el portapapeles o en un archivo PNG. Sin editor, sin cuentas, sin red.
 
-> **Estado:** en Windows funcionan las capturas de pantalla completa, región y ventana, al portapapeles y a archivo; falta firmar y publicar. El soporte de Linux está escrito pero todavía no se ejecutó en Linux. Lo pendiente está en [TODO.md](TODO.md) y las mediciones en [METRICS.md](METRICS.md).
+> **Estado:** en Windows funcionan las capturas de pantalla completa, región y ventana, al portapapeles y a archivo; falta firmar y publicar. En Linux, la captura de pantalla completa al portapapeles se probó sobre X11; el resto todavía no se ejecutó en un escritorio real. Lo pendiente está en [TODO.md](TODO.md) y las mediciones en [METRICS.md](METRICS.md).
 
 ## Uso rápido
 
@@ -62,7 +62,7 @@ Los enlaces de descarga se publican junto con la versión 1.
 
 ### Dependencias en Linux
 
-Para compilar hacen falta los paquetes de desarrollo de X11 (por ejemplo `libx11-dev` y `libxcb1-dev` en Debian y Ubuntu) y `pkg-config`. Para ejecutar, el sistema necesita X11 (`libx11-6`, `libxcb1`), el bus de sesión D-Bus y, para el icono de la bandeja, un host de `StatusNotifierItem` (GNOME requiere la extensión AppIndicator). En Wayland además hace falta `xdg-desktop-portal` con el backend del escritorio. El AppImage se arma con `packaging/linux/build-appimage.sh`.
+Para compilar hacen falta los paquetes de desarrollo de X11 (por ejemplo `libx11-dev`, `libx11-xcb-dev` y `libxcb1-dev` en Debian y Ubuntu) y `pkg-config`. Para ejecutar, el sistema necesita X11 (`libx11-6`, `libxcb1`, `libxkbcommon-x11-0`), el bus de sesión D-Bus y, para el icono de la bandeja, un host de `StatusNotifierItem` (GNOME requiere la extensión AppIndicator). En Wayland además hace falta `xdg-desktop-portal` con el backend del escritorio. El AppImage se arma con `packaging/linux/build-appimage.sh`.
 
 ## Soporte por plataforma
 
@@ -180,7 +180,7 @@ El `core` no conoce el sistema operativo: cada plataforma implementa el trait `P
 
 ## Licencia
 
-El código se publica bajo [PolyForm Strict 1.0.0](LICENSE). Es *source-available*, no open source.
+Copyright © 2026 Tuty. El código se publica bajo [PolyForm Strict 1.0.0](LICENSE). Es *source-available*, no open source.
 
 | Permitido | Reservado al titular |
 |---|---|

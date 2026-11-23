@@ -4,17 +4,17 @@ Mediciones contra los objetivos de rendimiento de la versión 1. Cada fila indic
 
 ## Última medición
 
-- Fecha: 2026-11-22.
+- Fecha: 2026-11-22; tamaño, arranque, memoria y CPU en reposo medidos de nuevo el 2026-11-23 sobre la rama con el arreglo de Linux (tres corridas de `scripts/measure.ps1`).
 - Commit: ver `git log` de la rama; build `release` con el perfil de `Cargo.toml`.
 - Equipo: Windows 11 Pro, 16 núcleos lógicos, un monitor de 1920x1080 al 100 % de escala. No hay mediciones en 2 monitores ni con DPI mixto.
 
 | Métrica | Objetivo | Resultado | Cómo se midió |
 |---|---|---|---|
-| Binario Windows | < 1 MB | 595 KB | `scripts/measure.ps1` |
+| Binario Windows | < 1 MB | 708 KB | `scripts/measure.ps1` |
 | RAM en idle (bytes privados) | < 5 MB | 1,8 MB | `scripts/measure.ps1`, después de 5 s en reposo |
 | RAM en idle (working set) | < 5 MB | 10,3 MB | `scripts/measure.ps1`; incluye páginas compartidas de DLL del sistema |
 | CPU en idle | ~0 % | 0 % | `scripts/measure.ps1`, 20 s de muestreo |
-| Arranque en frío | < 200 ms | 65 ms | `scripts/measure.ps1`, hasta la línea `ready` del log, con configuración existente |
+| Arranque en frío | < 200 ms | 33–112 ms | `scripts/measure.ps1`, hasta la línea `ready` del log, con configuración existente |
 | Atajo → overlay visible | < 100 ms | 82 ms | `overlay_to_clipboard`, de la tecla enviada a la ventana visible, con sondeo cada 20 ms |
 | Pantalla completa → portapapeles (1080p) | < 150 ms | ~70 ms | `latency`: captura ~30 ms + PNG, DIBV5 y portapapeles ~35 ms |
 
