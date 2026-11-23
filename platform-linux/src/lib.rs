@@ -80,8 +80,6 @@ mod backend {
             portal::screenshot(mode != Mode::FullScreen)
         }
 
-        fn grant_foreground(&self) {}
-
         fn local_time(&self) -> LocalTime {
             local_time()
         }

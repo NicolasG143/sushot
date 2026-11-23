@@ -14,6 +14,8 @@ mod monitor;
 mod snapshot_key;
 mod windows_at;
 
+pub use foreground::ForegroundOwner;
+
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
 
@@ -43,10 +45,6 @@ impl Platform for WindowsPlatform {
 
     fn reveal_overlay(&self, window: WindowId) -> Result<(), PlatformError> {
         windows_at::reveal_overlay(window)
-    }
-
-    fn grant_foreground(&self) {
-        foreground::grant();
     }
 
     fn local_time(&self) -> LocalTime {

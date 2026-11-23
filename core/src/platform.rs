@@ -82,10 +82,6 @@ pub trait Platform {
         None
     }
 
-    /// Lets the next window this process opens take the foreground instead of
-    /// appearing behind the active application.
-    fn grant_foreground(&self);
-
     fn local_time(&self) -> LocalTime;
 
     /// Where `config.toml` lives for the current user.
