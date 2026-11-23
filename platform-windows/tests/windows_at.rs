@@ -1,7 +1,7 @@
 #![cfg(windows)]
 
-use klip_core::{Platform, Rect, WindowId};
-use klip_platform_windows::WindowsPlatform;
+use sushot_core::{Platform, Rect, WindowId};
+use sushot_platform_windows::WindowsPlatform;
 use windows::Win32::Foundation::HWND;
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::WindowsAndMessaging::{
@@ -27,7 +27,7 @@ impl ProbeWindow {
             CreateWindowExW(
                 WS_EX_TOPMOST | WS_EX_TOOLWINDOW,
                 w!("STATIC"),
-                w!("klip probe"),
+                w!("sushot probe"),
                 WS_POPUP | WS_VISIBLE,
                 area.x,
                 area.y,

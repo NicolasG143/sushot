@@ -1,4 +1,4 @@
-use klip_core::{Mode, Rect};
+use sushot_core::{Mode, Rect};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Outcome {

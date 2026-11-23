@@ -9,9 +9,9 @@ publish = false
 license-file = "LICENSE"
 
 [workspace.dependencies]
-klip-core = { path = "core" }
-klip-platform-windows = { path = "platform-windows" }
-klip-platform-linux = { path = "platform-linux" }
+sushot-core = { path = "core" }
+sushot-platform-windows = { path = "platform-windows" }
+sushot-platform-linux = { path = "platform-linux" }
 log = "0.4.35"
 png = "0.18.1"
 windows = "0.62.2"

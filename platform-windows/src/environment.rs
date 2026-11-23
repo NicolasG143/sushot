@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use klip_core::LocalTime;
+use sushot_core::LocalTime;
 use windows::Win32::System::Com::CoTaskMemFree;
 use windows::Win32::System::SystemInformation::GetLocalTime;
 use windows::Win32::UI::Shell::{
@@ -21,7 +21,7 @@ pub(crate) fn local_time() -> LocalTime {
 }
 
 pub(crate) fn config_path() -> Option<PathBuf> {
-    known_folder(&FOLDERID_RoamingAppData).map(|dir| dir.join("klip").join("config.toml"))
+    known_folder(&FOLDERID_RoamingAppData).map(|dir| dir.join("sushot").join("config.toml"))
 }
 
 pub(crate) fn pictures_dir() -> Option<PathBuf> {

@@ -13,7 +13,7 @@
     ProcessorArchitecture="x64" />
 
   <Properties>
-    <DisplayName>klip</DisplayName>
+    <DisplayName>sushot</DisplayName>
     <PublisherDisplayName>REPLACE-WITH-PUBLISHER-DISPLAY-NAME</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -27,16 +27,16 @@
   </Resources>
 
   <Applications>
-    <Application Id="Klip" Executable="klip.exe" EntryPoint="Windows.FullTrustApplication">
+    <Application Id="Sushot" Executable="sushot.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
-        DisplayName="klip"
+        DisplayName="sushot"
         Description="Capturador de pantalla liviano en la bandeja del sistema"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png" />
       <Extensions>
-        <uap5:Extension Category="windows.startupTask" Executable="klip.exe" EntryPoint="Windows.FullTrustApplication">
-          <uap5:StartupTask TaskId="KlipStartup" Enabled="false" DisplayName="klip" />
+        <uap5:Extension Category="windows.startupTask" Executable="sushot.exe" EntryPoint="Windows.FullTrustApplication">
+          <uap5:StartupTask TaskId="SushotStartup" Enabled="false" DisplayName="sushot" />
         </uap5:Extension>
       </Extensions>
     </Application>

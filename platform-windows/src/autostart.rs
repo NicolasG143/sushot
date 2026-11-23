@@ -1,6 +1,6 @@
 use std::env;
 
-use klip_core::PlatformError;
+use sushot_core::PlatformError;
 use windows::ApplicationModel::{StartupTask, StartupTaskState};
 use windows::Win32::Foundation::{APPMODEL_ERROR_NO_PACKAGE, ERROR_FILE_NOT_FOUND};
 use windows::Win32::Storage::Packaging::Appx::GetCurrentPackageFullName;
@@ -11,8 +11,8 @@ use windows::Win32::System::Registry::{
 use windows::core::{HSTRING, PCWSTR};
 
 const RUN_KEY: &str = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
-const VALUE_NAME: &str = "klip";
-const STARTUP_TASK_ID: &str = "KlipStartup";
+const VALUE_NAME: &str = "sushot";
+const STARTUP_TASK_ID: &str = "SushotStartup";
 const OPERATION: &str = "update autostart entry";
 
 /// Packaged builds start through the `StartupTask` declared in the manifest, because a
@@ -115,7 +115,10 @@ mod tests {
 
     impl ScratchKey {
         fn new(name: &str) -> Self {
-            Self(format!("Software\\klip-test-{name}-{}", std::process::id()))
+            Self(format!(
+                "Software\\sushot-test-{name}-{}",
+                std::process::id()
+            ))
         }
     }
 
@@ -150,29 +153,29 @@ mod tests {
     #[test]
     fn enabling_stores_the_command_and_disabling_removes_it() {
         let scratch = ScratchKey::new("toggle");
-        let command = "\"C:\\Program Files\\klip\\klip.exe\"";
+        let command = "\"C:\\Program Files\\sushot\\sushot.exe\"";
 
-        write(&scratch.0, "klip", Some(command)).unwrap();
-        assert_eq!(read(&scratch.0, "klip").as_deref(), Some(command));
+        write(&scratch.0, "sushot", Some(command)).unwrap();
+        assert_eq!(read(&scratch.0, "sushot").as_deref(), Some(command));
 
-        write(&scratch.0, "klip", None).unwrap();
-        assert_eq!(read(&scratch.0, "klip"), None);
+        write(&scratch.0, "sushot", None).unwrap();
+        assert_eq!(read(&scratch.0, "sushot"), None);
     }
 
     #[test]
     fn disabling_a_missing_value_is_not_an_error() {
         let scratch = ScratchKey::new("missing");
 
-        write(&scratch.0, "klip", None).unwrap();
+        write(&scratch.0, "sushot", None).unwrap();
     }
 
     #[test]
     fn enabling_twice_keeps_the_latest_command() {
         let scratch = ScratchKey::new("overwrite");
 
-        write(&scratch.0, "klip", Some("old")).unwrap();
-        write(&scratch.0, "klip", Some("new")).unwrap();
+        write(&scratch.0, "sushot", Some("old")).unwrap();
+        write(&scratch.0, "sushot", Some("new")).unwrap();
 
-        assert_eq!(read(&scratch.0, "klip").as_deref(), Some("new"));
+        assert_eq!(read(&scratch.0, "sushot").as_deref(), Some("new"));
     }
 }

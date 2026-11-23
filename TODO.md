@@ -6,7 +6,7 @@ Pending, deferred or known-incomplete work. Milestones are tracked in `ROADMAP.m
 
 - Have a lawyer review the licensing before selling. The source is under PolyForm Strict 1.0.0, which covers noncommercial use only and grants no right to distribute or modify, so two documents are still missing: commercial terms (EULA) for people who buy the binary, and a contributor agreement that both assigns or licenses contributions and permits contributors to modify the code.
 - State the copyright holder (individual or company) in the README. It is not recorded anywhere yet.
-- Settle the product name. A preliminary web search (2026-11-22) found an existing Windows clipboard and screen capture tool distributed as "Klip" (winget id `PoBruno.Klip`) and several live "KLIP" trademark registrations in software classes. Confirm availability in Microsoft Partner Center and with a trademark professional, or rename.
+- Confirm the product name "Sushot". The project was renamed from "Klip" on 2026-11-22 because a preliminary web search found an existing Windows clipboard and screen capture tool distributed as "Klip" (winget id `PoBruno.Klip`) and several live "KLIP" trademark registrations in software classes. The availability of "Sushot" has not been checked; confirm it in Microsoft Partner Center and with a trademark professional.
 - Confirm the license policy exception for `unicode-ident` (`Unicode-3.0`). It is a compile-time dependency of procedural macros and is not linked into the binary, but `Unicode-3.0` is outside the MIT/Apache-2.0/BSD/ISC list in `SPECS.md`.
 
 ## M1 – Core and minimal Windows capture
@@ -17,7 +17,7 @@ Pending, deferred or known-incomplete work. Milestones are tracked in `ROADMAP.m
 - `Platform` does not declare `set_autostart` yet (M4).
 - The keyboard hook swallows all six valid combinations. Region and window modes work with the clipboard output; the save dialog output (M3) is reported as not available.
 - Logs go to stderr in debug builds and to the debugger output channel in every build. There is no log file.
-- The `klip` binary fails to compile for non-Windows targets until the Linux backend exists (M6).
+- The `sushot` binary fails to compile for non-Windows targets until the Linux backend exists (M6).
 - The idle memory goal in `SPECS.md` section 12 is under 5 MB without naming the metric. Private bytes (1.8 MB) meet it and working set (10.3 MB) does not; decide which one counts. See `METRICS.md`.
 
 ## M2 – Selection overlay
@@ -37,7 +37,7 @@ Pending, deferred or known-incomplete work. Milestones are tracked in `ROADMAP.m
 
 ## M4 – Tray, configuration and autostart
 
-- Manually verify the tray: menu content, the autostart checkbox, "Salir" releasing the hook and the icon, the icon flash after a copy, the optional toast with `show_toast = true`, and that autostart launches klip after signing in again. None of this could be driven without a person at the keyboard.
+- Manually verify the tray: menu content, the autostart checkbox, "Salir" releasing the hook and the icon, the icon flash after a copy, the optional toast with `show_toast = true`, and that autostart launches sushot after signing in again. None of this could be driven without a person at the keyboard.
 - The toast reuses the tray icon through `Shell_NotifyIconW` with the icon id 1, which is the first id `tray-icon` hands out. A newer `tray-icon` that numbers icons differently would make the toast fail with a warning in the log.
 - The first-run notice appears when `config.toml` does not exist yet, on every Windows version, and its text mentions Windows 11. It was launched but not seen on screen.
 - The MSIX build must use the `StartupTask` instead of the `Run` registry key (`SPECS.md` section 9.1); `set_autostart` only handles the `Run` key.
@@ -60,13 +60,13 @@ Pending, deferred or known-incomplete work. Milestones are tracked in `ROADMAP.m
 - To check Linux compilation from Windows, `x11` build scripts need `pkg-config`; a stub `pkg-config.exe` that prints `-lX11` plus `PKG_CONFIG_ALLOW_CROSS=1` was enough. A real Linux build needs the packages listed in `README.md`.
 - Unit tests that exist only for Linux (`x11.rs`, `hotkeys.rs`, `portal.rs`, `ipc.rs`) compile but were never executed.
 - Print Screen is grabbed for the six combinations with the four Caps Lock and Num Lock states. A grab fails if another client already owns the key (a desktop screenshot tool), and the error is reported at startup.
-- Under Wayland, `XGrabKey` does not receive keys outside XWayland windows, so klip uses the `GlobalShortcuts` portal. If registering hotkeys fails for any reason, klip logs a warning and keeps running so the CLI with a system shortcut still works; on Windows this means a failed hook leaves a tray icon with no hotkeys.
+- Under Wayland, `XGrabKey` does not receive keys outside XWayland windows, so sushot uses the `GlobalShortcuts` portal. If registering hotkeys fails for any reason, sushot logs a warning and keeps running so the CLI with a system shortcut still works; on Windows this means a failed hook leaves a tray icon with no hotkeys.
 - `capture_with_system_ui` with `Mode::Window` and `Mode::Region` both open the portal's interactive picker; the portal decides what the user can choose. The portal screenshot file is deleted after reading it.
 - The Wayland portal paths ignore `unregister_hotkeys`; the shortcut thread ends with the process.
-- The X11 clipboard relies on `arboard` keeping the selection owner alive; klip stays resident, but pasting after klip exits yields nothing, which `SPECS.md` section 7.1 already states.
+- The X11 clipboard relies on `arboard` keeping the selection owner alive; sushot stays resident, but pasting after sushot exits yields nothing, which `SPECS.md` section 7.1 already states.
 - `place_overlay` on X11 raises and sizes the window through `ConfigureWindow`; window managers may ignore a position request for a normal window. An override-redirect overlay may be needed.
 - Linux notifications for `show_toast` only write a log line; there is no desktop notification yet.
-- `klip --region` and its siblings fail with a clear message when no instance is running instead of running a one-shot capture.
+- `sushot --region` and its siblings fail with a clear message when no instance is running instead of running a one-shot capture.
 - Build the AppImage with `packaging/linux/build-appimage.sh` on Ubuntu and test the six combinations (`ROADMAP.md`, M6), then GNOME and KDE Wayland (M7). Optional `.deb` packaging is not written.
 - Publish the Wayland support table on the landing page once it exists.
 
@@ -76,5 +76,5 @@ Pending, deferred or known-incomplete work. Milestones are tracked in `ROADMAP.m
 - Arrow-key nudging only works while the mouse button is held during a drag. Adjusting a region after releasing the button would require keeping the selection open until a confirm key or click, which changes the one-gesture flow.
 - Windows Arm64: `cargo build --release --target aarch64-pc-windows-msvc` compiles every crate and fails at the link step because the Visual Studio ARM64 build tools are not installed. The `aarch64-pc-windows-msvc` Rust target was added to this machine with `rustup`.
 - The round loupe replaces the pointer in region mode only after the first mouse move inside the overlay; until then the crosshair is visible. It covers the selection border around the pointer while dragging. It is not shown in window mode.
-- Left Alt + Left Shift + Print Screen also toggles Windows High Contrast, which the system handles before the low-level hook, so klip cannot block it. The README and the first-run notice explain the right-hand modifiers and the setting; using the right-hand keys was not tested.
+- Left Alt + Left Shift + Print Screen also toggles Windows High Contrast, which the system handles before the low-level hook, so sushot cannot block it. The README and the first-run notice explain the right-hand modifiers and the setting; using the right-hand keys was not tested.
 - The keyboard hook sometimes never receives the Print Screen release when the overlay opens while the key is still held; the cause is unknown. A press more than one second after the previous one counts as a new keystroke, so a second press within that second after such a loss is still swallowed.

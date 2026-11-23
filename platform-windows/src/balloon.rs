@@ -1,4 +1,4 @@
-use klip_core::PlatformError;
+use sushot_core::PlatformError;
 use windows::Win32::Foundation::HWND;
 use windows::Win32::UI::Shell::{
     NIF_INFO, NIIF_INFO, NIM_MODIFY, NOTIFYICONDATAW, Shell_NotifyIconW,

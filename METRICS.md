@@ -1,4 +1,4 @@
-# Métricas de klip
+# Métricas de sushot
 
 Mediciones contra los objetivos de [SPECS.md §12](SPECS.md). Cada fila indica cómo se midió, para poder repetirla en cada release.
 
@@ -26,7 +26,7 @@ Mediciones contra los objetivos de [SPECS.md §12](SPECS.md). Cada fila indica c
 
 ## Prueba de estabilidad
 
-`platform-windows/tests/stability.rs`, ejecutada con `cargo test --release -p klip-platform-windows --test stability -- --ignored --nocapture`. Captura el escritorio y escribe el portapapeles 1000 veces seguidas, después de 20 capturas de calentamiento.
+`platform-windows/tests/stability.rs`, ejecutada con `cargo test --release -p sushot-platform-windows --test stability -- --ignored --nocapture`. Captura el escritorio y escribe el portapapeles 1000 veces seguidas, después de 20 capturas de calentamiento.
 
 | Recurso | Antes | Después |
 |---|---|---|
@@ -42,8 +42,8 @@ La prueba falla si crecen los objetos GDI o USER, si los handles suben más de 2
 ```powershell
 cargo build --release
 powershell -File scripts/measure.ps1
-cargo test --release -p klip-platform-windows --test stability -- --ignored --nocapture
-cargo test --release -p klip-platform-windows --test latency -- --ignored --nocapture
+cargo test --release -p sushot-platform-windows --test stability -- --ignored --nocapture
+cargo test --release -p sushot-platform-windows --test latency -- --ignored --nocapture
 ```
 
 `overlay_to_clipboard` inyecta mouse y teclado reales: ejecutarlo sin tocar el equipo.

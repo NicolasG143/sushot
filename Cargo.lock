@@ -869,55 +869,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "klip"
-version = "0.1.0"
-dependencies = [
- "embed-resource",
- "klip-core",
- "klip-platform-linux",
- "klip-platform-windows",
- "log",
- "png",
- "rfd",
- "softbuffer",
- "tray-icon",
- "windows",
- "winit",
-]
-
-[[package]]
-name = "klip-core"
-version = "0.1.0"
-dependencies = [
- "log",
- "png",
-]
-
-[[package]]
-name = "klip-platform-linux"
-version = "0.1.0"
-dependencies = [
- "arboard",
- "ashpd",
- "futures-util",
- "klip-core",
- "libc",
- "log",
- "png",
- "pollster",
- "x11rb 0.14.0",
-]
-
-[[package]]
-name = "klip-platform-windows"
-version = "0.1.0"
-dependencies = [
- "klip-core",
- "log",
- "windows",
-]
-
-[[package]]
 name = "ksni"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1870,6 +1821,55 @@ dependencies = [
  "web-sys",
  "windows-sys 0.61.2",
  "x11rb 0.13.2",
+]
+
+[[package]]
+name = "sushot"
+version = "0.1.0"
+dependencies = [
+ "embed-resource",
+ "log",
+ "png",
+ "rfd",
+ "softbuffer",
+ "sushot-core",
+ "sushot-platform-linux",
+ "sushot-platform-windows",
+ "tray-icon",
+ "windows",
+ "winit",
+]
+
+[[package]]
+name = "sushot-core"
+version = "0.1.0"
+dependencies = [
+ "log",
+ "png",
+]
+
+[[package]]
+name = "sushot-platform-linux"
+version = "0.1.0"
+dependencies = [
+ "arboard",
+ "ashpd",
+ "futures-util",
+ "libc",
+ "log",
+ "png",
+ "pollster",
+ "sushot-core",
+ "x11rb 0.14.0",
+]
+
+[[package]]
+name = "sushot-platform-windows"
+version = "0.1.0"
+dependencies = [
+ "log",
+ "sushot-core",
+ "windows",
 ]
 
 [[package]]

@@ -7,13 +7,13 @@ use std::path::PathBuf;
 use std::thread;
 use std::time::{Duration, Instant};
 
-use klip_core::{Config, Platform};
-use klip_platform_windows::WindowsPlatform;
+use sushot_core::{Config, Platform};
+use sushot_platform_windows::WindowsPlatform;
 use windows::Win32::UI::Input::KeyboardAndMouse::{VK_CONTROL, VK_ESCAPE, VK_MENU, VK_RETURN};
 use windows::core::w;
 
 use common::{
-    RunningKlip, become_dpi_aware, png_size, press_print_screen_with, tap, type_text,
+    RunningSushot, become_dpi_aware, png_size, press_print_screen_with, tap, type_text,
     wait_for_window,
 };
 
@@ -56,14 +56,14 @@ fn wait_for_file(path: &PathBuf) {
 }
 
 #[test]
-#[ignore = "drives the real save dialog with keystrokes and edits the user's klip configuration"]
+#[ignore = "drives the real save dialog with keystrokes and edits the user's sushot configuration"]
 fn ctrl_alt_print_screen_saves_a_png_and_remembers_the_folder() {
     become_dpi_aware();
     let _config = ConfigBackup::take();
-    let folder = std::env::temp_dir().join(format!("klip-e2e-save-{}", std::process::id()));
+    let folder = std::env::temp_dir().join(format!("sushot-e2e-save-{}", std::process::id()));
     fs::create_dir_all(&folder).unwrap();
     let target = folder.join("shot.png");
-    let _klip = RunningKlip::start();
+    let _sushot = RunningSushot::start();
 
     press_print_screen_with(&[VK_CONTROL, VK_MENU]);
     wait_for_window(w!("Guardar captura"));

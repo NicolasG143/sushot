@@ -25,7 +25,7 @@ mod tests {
     use super::*;
 
     fn lock_file(name: &str) -> PathBuf {
-        std::env::temp_dir().join(format!("klip-linux-lock-{name}-{}", std::process::id()))
+        std::env::temp_dir().join(format!("sushot-linux-lock-{name}-{}", std::process::id()))
     }
 
     #[test]
@@ -43,7 +43,7 @@ mod tests {
 
     #[test]
     fn claim_fails_when_the_directory_does_not_exist() {
-        let path = lock_file("missing").join("nested").join("klip.lock");
+        let path = lock_file("missing").join("nested").join("sushot.lock");
 
         assert!(claim(&path).is_err());
     }

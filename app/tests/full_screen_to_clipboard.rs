@@ -4,13 +4,13 @@ mod common;
 
 use std::ptr;
 
-use klip_core::Platform;
-use klip_platform_windows::WindowsPlatform;
+use sushot_core::Platform;
+use sushot_platform_windows::WindowsPlatform;
 use windows::Win32::Graphics::Gdi::BITMAPV5HEADER;
 use windows::Win32::UI::Input::KeyboardAndMouse::VK_CONTROL;
 
 use common::{
-    RunningKlip, become_dpi_aware, empty_clipboard, png_size, press_print_screen_with,
+    RunningSushot, become_dpi_aware, empty_clipboard, png_size, press_print_screen_with,
     wait_for_copied_image,
 };
 
@@ -19,7 +19,7 @@ use common::{
 fn ctrl_print_screen_copies_the_monitor_under_the_cursor() {
     become_dpi_aware();
     empty_clipboard();
-    let _klip = RunningKlip::start();
+    let _sushot = RunningSushot::start();
 
     press_print_screen_with(&[VK_CONTROL]);
     let copied = wait_for_copied_image();

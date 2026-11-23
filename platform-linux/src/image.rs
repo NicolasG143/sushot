@@ -1,7 +1,7 @@
 use std::io::{BufRead, Seek};
 
-use klip_core::{Frame, PlatformError, Rect};
 use png::{BitDepth, ColorType, Decoder, Transformations};
+use sushot_core::{Frame, PlatformError, Rect};
 
 const OPERATION: &str = "decode the portal screenshot";
 

@@ -1,4 +1,4 @@
-use klip_core::{PlatformError, Rect};
+use sushot_core::{PlatformError, Rect};
 use windows::Win32::Foundation::{POINT, RECT};
 use windows::Win32::Graphics::Gdi::{
     GetMonitorInfoW, MONITOR_DEFAULTTONEAREST, MONITORINFO, MonitorFromPoint,

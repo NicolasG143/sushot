@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use klip_core::{PlatformError, update_config};
+use sushot_core::{PlatformError, update_config};
 
 /// Applies the autostart choice to the system first and remembers it in the
 /// configuration only once the system accepted it, so the two never disagree.
@@ -23,7 +23,7 @@ mod tests {
     use std::fs;
     use std::path::PathBuf;
 
-    use klip_core::{Config, HotkeyKey, load_config, save_config};
+    use sushot_core::{Config, HotkeyKey, load_config, save_config};
 
     use super::*;
 
@@ -32,7 +32,7 @@ mod tests {
     impl Scratch {
         fn new(name: &str) -> Self {
             let dir =
-                std::env::temp_dir().join(format!("klip-settings-{name}-{}", std::process::id()));
+                std::env::temp_dir().join(format!("sushot-settings-{name}-{}", std::process::id()));
             let _ = fs::remove_dir_all(&dir);
             fs::create_dir_all(&dir).unwrap();
             Self(dir)

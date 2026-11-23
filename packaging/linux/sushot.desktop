@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=klip
+Name=sushot
 Comment=Screenshot utility
-Exec=klip
-Icon=klip
+Exec=sushot
+Icon=sushot
 Categories=Utility;Graphics;
 Terminal=false

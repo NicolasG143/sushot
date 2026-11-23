@@ -8,7 +8,7 @@ use std::time::{Duration, Instant};
 use windows::Win32::UI::Input::KeyboardAndMouse::{VK_ESCAPE, VK_SHIFT};
 
 use common::{
-    PollerClipboard, RunningKlip, become_dpi_aware, empty_clipboard, left_button, move_cursor,
+    PollerClipboard, RunningSushot, become_dpi_aware, empty_clipboard, left_button, move_cursor,
     png_size, press_print_screen_with, tap, wait_for_copied_image, wait_for_overlay,
 };
 
@@ -19,7 +19,7 @@ const ORIGIN: (i32, i32) = (200, 200);
 fn dragging_a_region_copies_exactly_that_area() {
     become_dpi_aware();
     empty_clipboard();
-    let _klip = RunningKlip::start();
+    let _sushot = RunningSushot::start();
 
     let started = Instant::now();
     press_print_screen_with(&[]);
@@ -39,7 +39,7 @@ fn dragging_a_region_copies_exactly_that_area() {
 fn one_press_reopens_the_overlay_after_a_region_capture() {
     become_dpi_aware();
     empty_clipboard();
-    let _klip = RunningKlip::start();
+    let _sushot = RunningSushot::start();
 
     press_print_screen_with(&[]);
     wait_for_overlay(true);
@@ -61,7 +61,7 @@ fn one_press_reopens_the_overlay_after_a_region_capture() {
 fn escape_closes_the_overlay_and_copies_nothing() {
     become_dpi_aware();
     empty_clipboard();
-    let _klip = RunningKlip::start();
+    let _sushot = RunningSushot::start();
 
     press_print_screen_with(&[]);
     wait_for_overlay(true);
@@ -78,7 +78,7 @@ fn escape_closes_the_overlay_and_copies_nothing() {
 fn a_click_without_dragging_cancels_the_region() {
     become_dpi_aware();
     empty_clipboard();
-    let _klip = RunningKlip::start();
+    let _sushot = RunningSushot::start();
 
     press_print_screen_with(&[]);
     wait_for_overlay(true);
@@ -97,7 +97,7 @@ fn a_click_without_dragging_cancels_the_region() {
 fn clicking_in_window_mode_copies_the_window_under_the_cursor() {
     become_dpi_aware();
     empty_clipboard();
-    let _klip = RunningKlip::start();
+    let _sushot = RunningSushot::start();
 
     press_print_screen_with(&[VK_SHIFT]);
     wait_for_overlay(true);

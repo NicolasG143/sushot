@@ -1,6 +1,6 @@
 use std::fmt;
 
-use klip_core::{Frame, Output, Platform, PlatformError, Rect, default_file_name, load_config};
+use sushot_core::{Frame, Output, Platform, PlatformError, Rect, default_file_name, load_config};
 
 use crate::save::{Dialogs, SavePlan, Saver};
 
@@ -109,7 +109,7 @@ mod tests {
     use std::thread;
     use std::time::{Duration, Instant};
 
-    use klip_core::{Action, LocalTime, WindowId, update_config};
+    use sushot_core::{Action, LocalTime, WindowId, update_config};
 
     use super::*;
 
@@ -133,7 +133,7 @@ mod tests {
     impl Scratch {
         fn new(name: &str) -> Self {
             let dir =
-                std::env::temp_dir().join(format!("klip-capture-{name}-{}", std::process::id()));
+                std::env::temp_dir().join(format!("sushot-capture-{name}-{}", std::process::id()));
             let _ = fs::remove_dir_all(&dir);
             fs::create_dir_all(dir.join("pictures")).unwrap();
             Self(dir)
@@ -191,7 +191,7 @@ mod tests {
             Ok(())
         }
 
-        fn claim_instance(&self) -> Result<Option<klip_core::InstanceGuard>, PlatformError> {
+        fn claim_instance(&self) -> Result<Option<sushot_core::InstanceGuard>, PlatformError> {
             Ok(None)
         }
 
@@ -224,7 +224,7 @@ mod tests {
 
         fn register_hotkeys(
             &self,
-            _key: klip_core::HotkeyKey,
+            _key: sushot_core::HotkeyKey,
             _actions: Sender<Action>,
         ) -> Result<(), PlatformError> {
             Ok(())

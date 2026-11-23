@@ -1,7 +1,7 @@
 #![cfg(windows)]
 
-use klip_core::{Platform, Rect};
-use klip_platform_windows::WindowsPlatform;
+use sushot_core::{Platform, Rect};
+use sushot_platform_windows::WindowsPlatform;
 use windows::Win32::UI::WindowsAndMessaging::{
     GetSystemMetrics, SM_CXVIRTUALSCREEN, SM_CYVIRTUALSCREEN, SM_XVIRTUALSCREEN, SM_YVIRTUALSCREEN,
 };

@@ -4,13 +4,13 @@ use std::os::unix::net::{UnixListener, UnixStream};
 use std::path::Path;
 use std::thread;
 
-use klip_core::Action;
+use sushot_core::Action;
 use winit::event_loop::EventLoopProxy;
 
 use crate::app::UiEvent;
 use crate::cli::{decode_request, encode_request};
 
-/// Starts accepting capture requests from `klip --region` and its siblings. A stale
+/// Starts accepting capture requests from `sushot --region` and its siblings. A stale
 /// socket left by a crashed instance is replaced; the single-instance lock held by the
 /// caller guarantees nobody else is listening.
 pub(crate) fn listen(path: &Path, proxy: EventLoopProxy<UiEvent>) -> Result<(), Box<dyn Error>> {
@@ -21,7 +21,7 @@ pub(crate) fn listen(path: &Path, proxy: EventLoopProxy<UiEvent>) -> Result<(), 
     let listener = UnixListener::bind(path)?;
     log::info!("accepting capture requests on {}", path.display());
     thread::Builder::new()
-        .name("klip-ipc".into())
+        .name("sushot-ipc".into())
         .spawn(move || {
             for stream in listener.incoming() {
                 match stream {
@@ -52,7 +52,7 @@ fn serve(stream: UnixStream, proxy: &EventLoopProxy<UiEvent>) {
 /// Hands `action` to the running instance listening on `path`.
 pub(crate) fn send(path: &Path, action: Action) -> Result<(), Box<dyn Error>> {
     let mut stream = UnixStream::connect(path)
-        .map_err(|error| format!("klip is not running ({}: {error})", path.display()))?;
+        .map_err(|error| format!("sushot is not running ({}: {error})", path.display()))?;
     writeln!(stream, "{}", encode_request(action))?;
     Ok(())
 }
@@ -62,13 +62,14 @@ mod tests {
     use std::io::Read;
     use std::os::unix::net::UnixListener;
 
-    use klip_core::{Mode, Output};
+    use sushot_core::{Mode, Output};
 
     use super::*;
 
     #[test]
     fn a_request_reaches_the_listener_as_one_line() {
-        let path = std::env::temp_dir().join(format!("klip-ipc-test-{}.sock", std::process::id()));
+        let path =
+            std::env::temp_dir().join(format!("sushot-ipc-test-{}.sock", std::process::id()));
         let _ = std::fs::remove_file(&path);
         let listener = UnixListener::bind(&path).unwrap();
 
@@ -89,8 +90,8 @@ mod tests {
     }
 
     #[test]
-    fn sending_without_a_listener_explains_that_klip_is_not_running() {
-        let path = std::env::temp_dir().join("klip-ipc-test-missing.sock");
+    fn sending_without_a_listener_explains_that_sushot_is_not_running() {
+        let path = std::env::temp_dir().join("sushot-ipc-test-missing.sock");
 
         let error = send(
             &path,
@@ -101,6 +102,6 @@ mod tests {
         )
         .unwrap_err();
 
-        assert!(error.to_string().contains("klip is not running"));
+        assert!(error.to_string().contains("sushot is not running"));
     }
 }

@@ -1,7 +1,7 @@
 #![cfg(windows)]
 
-use klip_core::Platform;
-use klip_platform_windows::WindowsPlatform;
+use sushot_core::Platform;
+use sushot_platform_windows::WindowsPlatform;
 use windows::Win32::System::ProcessStatus::{GetProcessMemoryInfo, PROCESS_MEMORY_COUNTERS_EX};
 use windows::Win32::System::Threading::{
     GR_GDIOBJECTS, GR_USEROBJECTS, GetCurrentProcess, GetGuiResources, GetProcessHandleCount,

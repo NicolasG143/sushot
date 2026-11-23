@@ -6,10 +6,10 @@ use rfd::{FileDialog, MessageButtons, MessageDialog, MessageDialogResult, Messag
 
 use crate::save::Dialogs;
 
-const TITLE: &str = "klip";
-const FIRST_RUN_NOTICE: &str = "klip está activo en la bandeja del sistema.\n\n\
+const TITLE: &str = "sushot";
+const FIRST_RUN_NOTICE: &str = "sushot está activo en la bandeja del sistema.\n\n\
 En Windows 11, Impr Pant puede estar asociada a Recortes en Configuración > Accesibilidad > \
-Teclado. klip tiene prioridad sobre Recortes, pero si Recortes se abre igual, desactivá esa opción.
+Teclado. sushot tiene prioridad sobre Recortes, pero si Recortes se abre igual, desactivá esa opción.
 
 Alt izquierdo + Shift izquierdo + Impr Pant también activa el Contraste alto de Windows. Usá Alt o Shift derechos, o desactivá el atajo en Configuración > Accesibilidad > Temas de contraste.";
 
@@ -45,11 +45,11 @@ impl Dialogs for NativeDialogs {
     }
 }
 
-/// Tells a first-time user where klip lives and what to do about Windows 11 binding
+/// Tells a first-time user where sushot lives and what to do about Windows 11 binding
 /// Print Screen to Snipping Tool. Runs on its own thread because the dialog blocks.
 pub(crate) fn announce_first_run() {
     let spawned = thread::Builder::new()
-        .name("klip-welcome".into())
+        .name("sushot-welcome".into())
         .spawn(|| {
             MessageDialog::new()
                 .set_level(MessageLevel::Info)

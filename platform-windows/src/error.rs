@@ -1,4 +1,4 @@
-use klip_core::PlatformError;
+use sushot_core::PlatformError;
 
 pub(crate) fn os_error(operation: &'static str) -> impl Fn(windows::core::Error) -> PlatformError {
     move |error| PlatformError::new(operation, error.to_string())

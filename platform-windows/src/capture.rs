@@ -2,7 +2,7 @@ use std::ffi::c_void;
 use std::ptr;
 use std::slice;
 
-use klip_core::{Frame, PlatformError, Rect};
+use sushot_core::{Frame, PlatformError, Rect};
 use windows::Win32::Graphics::Gdi::{
     BI_RGB, BITMAPINFO, BITMAPINFOHEADER, BitBlt, CAPTUREBLT, CreateCompatibleDC, CreateDIBSection,
     DIB_RGB_COLORS, DeleteDC, DeleteObject, GdiFlush, GetDC, HBITMAP, HDC, HGDIOBJ, ROP_CODE,

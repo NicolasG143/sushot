@@ -6,7 +6,7 @@ use tray_icon::{Icon, TrayIcon, TrayIconBuilder};
 use crate::icon;
 
 const ICON_SIZE: u32 = 32;
-const TOOLTIP: &str = "klip";
+const TOOLTIP: &str = "sushot";
 const AUTOSTART_LABEL: &str = "Iniciar con el sistema";
 const QUIT_LABEL: &str = "Salir";
 
@@ -27,7 +27,7 @@ impl Tray {
         let normal = Icon::from_rgba(icon::rgba(ICON_SIZE, false), ICON_SIZE, ICON_SIZE)?;
         let flash = Icon::from_rgba(icon::rgba(ICON_SIZE, true), ICON_SIZE, ICON_SIZE)?;
 
-        let title = MenuItem::new(format!("klip {}", env!("CARGO_PKG_VERSION")), false, None);
+        let title = MenuItem::new(format!("sushot {}", env!("CARGO_PKG_VERSION")), false, None);
         let autostart = CheckMenuItem::new(AUTOSTART_LABEL, true, autostart_enabled, None);
         let quit = MenuItem::new(QUIT_LABEL, true, None);
         let menu = Menu::new();
@@ -76,7 +76,7 @@ impl Tray {
     pub(crate) fn notify(&self, title: &str, text: &str) {
         let window = self.icon.window_handle() as isize;
         if let Err(error) =
-            klip_platform_windows::show_tray_notification(window, FIRST_ICON_ID, title, text)
+            sushot_platform_windows::show_tray_notification(window, FIRST_ICON_ID, title, text)
         {
             log::warn!("{error}");
         }

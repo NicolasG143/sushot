@@ -2,7 +2,7 @@ use std::sync::mpsc::Sender;
 use std::sync::{Mutex, MutexGuard, PoisonError};
 use std::thread::{self, JoinHandle};
 
-use klip_core::{Action, HotkeyKey, PlatformError, resolve};
+use sushot_core::{Action, HotkeyKey, PlatformError, resolve};
 use x11rb::COPY_DEPTH_FROM_PARENT;
 use x11rb::connection::Connection;
 use x11rb::protocol::Event;
@@ -69,7 +69,7 @@ pub(crate) fn register(key: HotkeyKey, actions: Sender<Action>) -> Result<(), Pl
         .map_err(fail(INSTALL))?;
 
     let handle = thread::Builder::new()
-        .name("klip-hotkeys".into())
+        .name("sushot-hotkeys".into())
         .spawn(move || listen(server, keycode, stop_window, actions))
         .map_err(fail(INSTALL))?;
     if let Some(previous) = lock().replace(Listener {
@@ -196,7 +196,7 @@ fn key_keycode(conn: &RustConnection, key: HotkeyKey) -> Result<Keycode, Platfor
 
 #[cfg(test)]
 mod tests {
-    use klip_core::{Mode, Output};
+    use sushot_core::{Mode, Output};
 
     use super::*;
 

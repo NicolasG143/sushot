@@ -1,4 +1,4 @@
-use klip_core::{Action, resolve};
+use sushot_core::{Action, resolve};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Transition {
@@ -87,7 +87,7 @@ impl SnapshotKey {
 
 #[cfg(test)]
 mod tests {
-    use klip_core::{Mode, Output};
+    use sushot_core::{Mode, Output};
 
     use super::*;
 

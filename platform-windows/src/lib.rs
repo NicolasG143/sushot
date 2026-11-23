@@ -17,7 +17,7 @@ mod windows_at;
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
 
-use klip_core::{
+use sushot_core::{
     Action, Frame, HotkeyKey, InstanceGuard, LocalTime, Platform, PlatformError, Rect, WindowId,
 };
 

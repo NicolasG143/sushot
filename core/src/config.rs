@@ -195,14 +195,14 @@ mod tests {
     impl Scratch {
         fn new(name: &str) -> Self {
             let dir =
-                std::env::temp_dir().join(format!("klip-config-{name}-{}", std::process::id()));
+                std::env::temp_dir().join(format!("sushot-config-{name}-{}", std::process::id()));
             let _ = fs::remove_dir_all(&dir);
             fs::create_dir_all(&dir).unwrap();
             Self(dir)
         }
 
         fn file(&self) -> PathBuf {
-            self.0.join("klip").join("config.toml")
+            self.0.join("sushot").join("config.toml")
         }
     }
 
@@ -234,7 +234,7 @@ mod tests {
 
     #[test]
     fn parser_accepts_literal_strings_comments_and_unknown_keys() {
-        let text = "# klip\nautostart = true # on\n\nlast_save_dir = 'C:\\Users\\Ana'\nfuture = 3\nshow_toast=false\n";
+        let text = "# sushot\nautostart = true # on\n\nlast_save_dir = 'C:\\Users\\Ana'\nfuture = 3\nshow_toast=false\n";
 
         let config = Config::parse(text).unwrap();
 

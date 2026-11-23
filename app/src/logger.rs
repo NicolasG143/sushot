@@ -27,7 +27,7 @@ impl Log for Logger {
             return;
         }
         let line = format!(
-            "[klip] {:<5} {}: {}\n",
+            "[sushot] {:<5} {}: {}\n",
             record.level(),
             record.target(),
             record.args()
