@@ -18,11 +18,11 @@ use windows::Win32::UI::HiDpi::{
 };
 use windows::Win32::UI::Input::KeyboardAndMouse::{
     INPUT, INPUT_0, INPUT_KEYBOARD, INPUT_MOUSE, KEYBD_EVENT_FLAGS, KEYBDINPUT, KEYEVENTF_KEYUP,
-    MOUSE_EVENT_FLAGS, MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP, MOUSEINPUT, SendInput,
-    VIRTUAL_KEY, VK_SNAPSHOT,
+    KEYEVENTF_UNICODE, MOUSE_EVENT_FLAGS, MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP, MOUSEINPUT,
+    SendInput, VIRTUAL_KEY, VK_SNAPSHOT,
 };
 use windows::Win32::UI::WindowsAndMessaging::{FindWindowW, IsWindowVisible, SetCursorPos};
-use windows::core::w;
+use windows::core::{PCWSTR, w};
 
 const STARTUP_TIMEOUT: Duration = Duration::from_secs(5);
 const CAPTURE_TIMEOUT: Duration = Duration::from_secs(5);
@@ -205,4 +205,39 @@ pub fn png_size(png: Vec<u8>) -> (u32, u32) {
     let mut rgba = vec![0; decoder.output_buffer_size().expect("PNG fits in memory")];
     let info = decoder.next_frame(&mut rgba).expect("PNG pixels");
     (info.width, info.height)
+}
+
+pub fn type_text(text: &str) {
+    let mut inputs = Vec::new();
+    for unit in text.encode_utf16() {
+        for flags in [KEYEVENTF_UNICODE, KEYEVENTF_UNICODE | KEYEVENTF_KEYUP] {
+            inputs.push(INPUT {
+                r#type: INPUT_KEYBOARD,
+                Anonymous: INPUT_0 {
+                    ki: KEYBDINPUT {
+                        wScan: unit,
+                        dwFlags: flags,
+                        ..Default::default()
+                    },
+                },
+            });
+        }
+    }
+    send(&inputs);
+}
+
+pub fn wait_for_window(title: PCWSTR) {
+    let deadline = Instant::now() + CAPTURE_TIMEOUT;
+    while unsafe { FindWindowW(None, title) }.is_err() {
+        assert!(Instant::now() < deadline, "the dialog never appeared");
+        thread::sleep(POLL_INTERVAL);
+    }
+    thread::sleep(Duration::from_millis(400));
+}
+
+pub fn foreground_title() -> String {
+    use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowTextW};
+    let mut title = [0u16; 256];
+    let length = unsafe { GetWindowTextW(GetForegroundWindow(), &mut title) };
+    String::from_utf16_lossy(&title[..length.max(0) as usize])
 }

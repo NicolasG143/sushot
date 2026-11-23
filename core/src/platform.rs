@@ -1,7 +1,8 @@
 use std::fmt;
+use std::path::PathBuf;
 use std::sync::mpsc::Sender;
 
-use crate::{Action, Frame, Rect};
+use crate::{Action, Frame, LocalTime, Rect};
 
 /// Native handle of a top-level window, as the platform reports it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -42,6 +43,18 @@ pub trait Platform {
 
     /// Covers `area` with `window`, raised above every other window, in physical pixels.
     fn place_overlay(&self, window: WindowId, area: Rect) -> Result<(), PlatformError>;
+
+    /// Lets the next window this process opens take the foreground instead of
+    /// appearing behind the active application.
+    fn grant_foreground(&self);
+
+    fn local_time(&self) -> LocalTime;
+
+    /// Where `config.toml` lives for the current user.
+    fn config_path(&self) -> Option<PathBuf>;
+
+    /// The user's pictures folder.
+    fn pictures_dir(&self) -> Option<PathBuf>;
 
     /// Replaces the clipboard contents with `image`.
     fn copy_image(&self, image: &Frame) -> Result<(), PlatformError>;

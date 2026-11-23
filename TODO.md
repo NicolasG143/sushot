@@ -28,3 +28,10 @@ Pending, deferred or known-incomplete work. Milestones are tracked in `ROADMAP.m
 - The overlay appeared after about 82 ms in the end-to-end test, including the 20 ms polling granularity of the test. The 100 ms budget has little margin; profile `grab_virtual_desktop` and window creation on larger desktops.
 - Window mode skips click-through layered windows, cloaked windows and minimized windows, and otherwise picks the topmost visible top-level window, which can be the desktop shell window when no application is under the cursor.
 - The end-to-end overlay tests inject real mouse and keyboard input, so a physical mouse movement during the run makes them fail. Run them without touching the mouse.
+
+## M3 – File output
+
+- The save dialog does not always open in the foreground. `grant_foreground` injects an unused key (F24) before the dialog so Windows lets the process take focus, and the end-to-end test failed intermittently because another window (File Explorer, Photos, Discord) stayed in front. Investigate an owner window with `AttachThreadInput` or `SetForegroundWindow` on the dialog itself. Run `save_to_file` only on an idle desktop: it types into whatever window has focus when the dialog fails to come forward.
+- Only `Ctrl + Alt + Print Screen` was driven end to end through the native dialog. Region and window with `Alt` share the same code path and are covered by unit tests.
+- The save dialog and error messages are in Spanish, like the tray text in `SPECS.md`; there is no localization layer.
+- Saving encodes from a cropped copy of the frozen frame, so a full-desktop save holds the frame and the crop in memory while the dialog is open.
