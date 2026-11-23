@@ -1,18 +1,26 @@
 use std::env;
 
 use klip_core::PlatformError;
-use windows::Win32::Foundation::ERROR_FILE_NOT_FOUND;
+use windows::ApplicationModel::{StartupTask, StartupTaskState};
+use windows::Win32::Foundation::{APPMODEL_ERROR_NO_PACKAGE, ERROR_FILE_NOT_FOUND};
+use windows::Win32::Storage::Packaging::Appx::GetCurrentPackageFullName;
 use windows::Win32::System::Registry::{
     HKEY, HKEY_CURRENT_USER, KEY_SET_VALUE, REG_OPTION_NON_VOLATILE, REG_SZ, RegCloseKey,
     RegCreateKeyExW, RegDeleteValueW, RegSetValueExW,
 };
-use windows::core::PCWSTR;
+use windows::core::{HSTRING, PCWSTR};
 
 const RUN_KEY: &str = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 const VALUE_NAME: &str = "klip";
+const STARTUP_TASK_ID: &str = "KlipStartup";
 const OPERATION: &str = "update autostart entry";
 
+/// Packaged builds start through the `StartupTask` declared in the manifest, because a
+/// `Run` entry would point into the package's read-only install folder.
 pub(crate) fn set(enabled: bool) -> Result<(), PlatformError> {
+    if is_packaged() {
+        return set_startup_task(enabled);
+    }
     let command = if enabled {
         let exe =
             env::current_exe().map_err(|error| PlatformError::new(OPERATION, error.to_string()))?;
@@ -21,6 +29,34 @@ pub(crate) fn set(enabled: bool) -> Result<(), PlatformError> {
         None
     };
     write(RUN_KEY, VALUE_NAME, command.as_deref())
+}
+
+fn is_packaged() -> bool {
+    let mut length = 0u32;
+    let status = unsafe { GetCurrentPackageFullName(&mut length, None) };
+    status != APPMODEL_ERROR_NO_PACKAGE
+}
+
+fn set_startup_task(enabled: bool) -> Result<(), PlatformError> {
+    let fail = |error: windows::core::Error| PlatformError::new(OPERATION, error.to_string());
+    let task = StartupTask::GetAsync(&HSTRING::from(STARTUP_TASK_ID))
+        .and_then(|operation| operation.join())
+        .map_err(fail)?;
+    if !enabled {
+        return task.Disable().map_err(fail);
+    }
+    let state = task
+        .RequestEnableAsync()
+        .and_then(|operation| operation.join())
+        .map_err(fail)?;
+    if state == StartupTaskState::Enabled {
+        Ok(())
+    } else {
+        Err(PlatformError::new(
+            OPERATION,
+            format!("the system left the startup task {state:?}"),
+        ))
+    }
 }
 
 fn wide(text: &str) -> Vec<u16> {
