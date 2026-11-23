@@ -2,7 +2,7 @@
 
 Capturador de pantalla ultra liviano para Windows y Linux. Vive en la bandeja del sistema, responde a `Impr Pant` y entrega la captura en el portapapeles o en un archivo PNG. Sin editor, sin cuentas, sin red.
 
-> **Estado:** este README describe la versión 1 terminada. Hoy solo funciona `Ctrl + Impr Pant` (pantalla completa al portapapeles) en Windows. El avance real está en [ROADMAP.md](ROADMAP.md), lo pendiente en [TODO.md](TODO.md) y el detalle técnico en [SPECS.md](SPECS.md). Los valores de rendimiento son objetivos de diseño, no mediciones.
+> **Estado:** en Windows funcionan las capturas de pantalla completa, región y ventana, al portapapeles y a archivo; falta firmar y publicar. El soporte de Linux está escrito pero todavía no se ejecutó en Linux. Lo pendiente está en [TODO.md](TODO.md) y las mediciones en [METRICS.md](METRICS.md).
 
 ## Uso rápido
 

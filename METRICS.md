@@ -1,6 +1,6 @@
 # Métricas de sushot
 
-Mediciones contra los objetivos de [SPECS.md §12](SPECS.md). Cada fila indica cómo se midió, para poder repetirla en cada release.
+Mediciones contra los objetivos de rendimiento de la versión 1. Cada fila indica cómo se midió, para poder repetirla en cada release.
 
 ## Última medición
 
@@ -20,7 +20,7 @@ Mediciones contra los objetivos de [SPECS.md §12](SPECS.md). Cada fila indica c
 
 ### Lectura de los resultados
 
-- El objetivo de RAM de `SPECS.md` no define la métrica. Con bytes privados se cumple; con working set no, porque el sistema cuenta las páginas compartidas de `user32`, `shell32` y similares. Hay que decidir cuál es la métrica oficial.
+- El objetivo de RAM en reposo (menos de 5 MB) no define la métrica. Con bytes privados se cumple; con working set no, porque el sistema cuenta las páginas compartidas de `user32`, `shell32` y similares. Hay que decidir cuál es la métrica oficial.
 - La medición de arranque excluye el diálogo de primer arranque, que añade DLLs de diálogos comunes (118 ms y 13,1 MB de working set con el diálogo abierto, en una medición informal previa).
 - El PNG del portapapeles usa la compresión más rápida del crate `png`: 1080p pasa de 365 ms con la compresión por defecto a 22 ms, y el PNG crece de 1,2 MB a 2,1 MB. El archivo guardado con `Alt` sigue usando la compresión por defecto.
 
