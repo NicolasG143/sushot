@@ -1,11 +1,15 @@
 use std::io;
 use std::path::{Path, PathBuf};
+use std::thread;
 
 use rfd::{FileDialog, MessageButtons, MessageDialog, MessageDialogResult, MessageLevel};
 
 use crate::save::Dialogs;
 
 const TITLE: &str = "klip";
+const FIRST_RUN_NOTICE: &str = "klip está activo en la bandeja del sistema.\n\n\
+En Windows 11, Impr Pant puede estar asociada a Recortes en Configuración > Accesibilidad > \
+Teclado. klip tiene prioridad sobre Recortes, pero si Recortes se abre igual, desactivá esa opción.";
 
 #[derive(Clone, Copy)]
 pub(crate) struct NativeDialogs;
@@ -36,5 +40,23 @@ impl Dialogs for NativeDialogs {
             .set_buttons(MessageButtons::YesNo)
             .show();
         answer == MessageDialogResult::Yes
+    }
+}
+
+/// Tells a first-time user where klip lives and what to do about Windows 11 binding
+/// Print Screen to Snipping Tool. Runs on its own thread because the dialog blocks.
+pub(crate) fn announce_first_run() {
+    let spawned = thread::Builder::new()
+        .name("klip-welcome".into())
+        .spawn(|| {
+            MessageDialog::new()
+                .set_level(MessageLevel::Info)
+                .set_title(TITLE)
+                .set_description(FIRST_RUN_NOTICE)
+                .set_buttons(MessageButtons::Ok)
+                .show();
+        });
+    if let Err(error) = spawned {
+        log::warn!("first run notice could not be shown: {error}");
     }
 }

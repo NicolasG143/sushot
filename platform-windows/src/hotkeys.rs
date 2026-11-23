@@ -1,16 +1,18 @@
 use std::cell::RefCell;
+use std::sync::Mutex;
 use std::sync::mpsc::{self, Sender};
-use std::thread;
+use std::thread::{self, JoinHandle};
 
 use klip_core::{Action, PlatformError};
 use windows::Win32::Foundation::{LPARAM, LRESULT, WPARAM};
+use windows::Win32::System::Threading::GetCurrentThreadId;
 use windows::Win32::UI::Input::KeyboardAndMouse::{
     GetAsyncKeyState, VIRTUAL_KEY, VK_CONTROL, VK_MENU, VK_SHIFT, VK_SNAPSHOT,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     CallNextHookEx, GetMessageW, HC_ACTION, KBDLLHOOKSTRUCT, MSG, PostQuitMessage,
-    SetWindowsHookExW, UnhookWindowsHookEx, WH_KEYBOARD_LL, WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN,
-    WM_SYSKEYUP,
+    PostThreadMessageW, SetWindowsHookExW, UnhookWindowsHookEx, WH_KEYBOARD_LL, WM_KEYDOWN,
+    WM_KEYUP, WM_QUIT, WM_SYSKEYDOWN, WM_SYSKEYUP,
 };
 
 use crate::error::os_error;
@@ -24,23 +26,58 @@ struct Listener {
     actions: Sender<Action>,
 }
 
+struct HookThread {
+    id: u32,
+    handle: JoinHandle<()>,
+}
+
+static HOOK_THREAD: Mutex<Option<HookThread>> = Mutex::new(None);
+
 thread_local! {
     static LISTENER: RefCell<Option<Listener>> = const { RefCell::new(None) };
 }
 
 pub(crate) fn register(actions: Sender<Action>) -> Result<(), PlatformError> {
     let (installed_tx, installed_rx) = mpsc::channel();
-    thread::Builder::new()
+    let handle = thread::Builder::new()
         .name("klip-hotkeys".into())
         .spawn(move || run(actions, installed_tx))
         .map_err(|error| PlatformError::new(INSTALL, error.to_string()))?;
 
-    installed_rx
+    let id = installed_rx
         .recv()
-        .map_err(|_| PlatformError::new(INSTALL, "hook thread ended before reporting"))?
+        .map_err(|_| PlatformError::new(INSTALL, "hook thread ended before reporting"))??;
+    if let Some(previous) = lock_hook_thread().replace(HookThread { id, handle }) {
+        log::warn!("a keyboard hook was already installed; stopping the previous one");
+        stop(previous);
+    }
+    Ok(())
 }
 
-fn run(actions: Sender<Action>, installed: Sender<Result<(), PlatformError>>) {
+/// Removes the hook and waits until its thread is gone.
+pub(crate) fn unregister() {
+    if let Some(hook) = lock_hook_thread().take() {
+        stop(hook);
+    }
+}
+
+fn lock_hook_thread() -> std::sync::MutexGuard<'static, Option<HookThread>> {
+    HOOK_THREAD
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+}
+
+fn stop(hook: HookThread) {
+    if let Err(error) = unsafe { PostThreadMessageW(hook.id, WM_QUIT, WPARAM(0), LPARAM(0)) } {
+        log::warn!("keyboard hook thread could not be asked to stop: {error}");
+        return;
+    }
+    if hook.handle.join().is_err() {
+        log::error!("keyboard hook thread panicked while stopping");
+    }
+}
+
+fn run(actions: Sender<Action>, installed: Sender<Result<u32, PlatformError>>) {
     LISTENER.set(Some(Listener {
         key: SnapshotKey::default(),
         actions,
@@ -55,7 +92,7 @@ fn run(actions: Sender<Action>, installed: Sender<Result<(), PlatformError>>) {
             return;
         }
     };
-    if installed.send(Ok(())).is_err() {
+    if installed.send(Ok(unsafe { GetCurrentThreadId() })).is_err() {
         log::warn!("keyboard hook installed but nobody waits for the result");
     }
     log::info!("keyboard hook installed");

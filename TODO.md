@@ -16,7 +16,6 @@ Pending, deferred or known-incomplete work. Milestones are tracked in `ROADMAP.m
 - `SPECS.md` sections 7.1 and 10 still list `arboard` for the Windows clipboard and `xcap` as a capture option. The implementation uses Win32 directly for both; update the spec once the decision is confirmed.
 - `Platform` does not declare `set_autostart` yet (M4).
 - The keyboard hook swallows all six valid combinations. Region and window modes work with the clipboard output; the save dialog output (M3) is reported as not available.
-- klip can only be stopped by ending the process until the tray menu exists (M4).
 - Logs go to stderr in debug builds and to the debugger output channel in every build. There is no log file.
 - The `klip` binary fails to compile for non-Windows targets until the Linux backend exists (M6).
 - Idle memory of the release build was 6.5 MB of working set and 1.1 MB of private bytes in a single informal reading. The goal in `SPECS.md` section 12 is under 5 MB without naming the metric; define it and measure properly in M5.
@@ -35,3 +34,11 @@ Pending, deferred or known-incomplete work. Milestones are tracked in `ROADMAP.m
 - Only `Ctrl + Alt + Print Screen` was driven end to end through the native dialog. Region and window with `Alt` share the same code path and are covered by unit tests.
 - The save dialog and error messages are in Spanish, like the tray text in `SPECS.md`; there is no localization layer.
 - Saving encodes from a cropped copy of the frozen frame, so a full-desktop save holds the frame and the crop in memory while the dialog is open.
+
+## M4 – Tray, configuration and autostart
+
+- Manually verify the tray: menu content, the autostart checkbox, "Salir" releasing the hook and the icon, the icon flash after a copy, the optional toast with `show_toast = true`, and that autostart launches klip after signing in again. None of this could be driven without a person at the keyboard.
+- The toast reuses the tray icon through `Shell_NotifyIconW` with the icon id 1, which is the first id `tray-icon` hands out. A newer `tray-icon` that numbers icons differently would make the toast fail with a warning in the log.
+- The first-run notice appears when `config.toml` does not exist yet, on every Windows version, and its text mentions Windows 11. It was launched but not seen on screen.
+- The MSIX build must use the `StartupTask` instead of the `Run` registry key (`SPECS.md` section 9.1); `set_autostart` only handles the `Run` key.
+- `show_toast` and `autostart` are read from `config.toml` at use time or at startup; there is no file watcher, so edits take effect on the next copy or restart.

@@ -1,3 +1,4 @@
+use std::any::Any;
 use std::fmt;
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
@@ -7,6 +8,19 @@ use crate::{Action, Frame, LocalTime, Rect};
 /// Native handle of a top-level window, as the platform reports it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct WindowId(pub isize);
+
+/// Proof that this process is the only running instance; dropping it releases the claim.
+pub struct InstanceGuard {
+    _holder: Box<dyn Any>,
+}
+
+impl InstanceGuard {
+    pub fn new(holder: impl Any) -> Self {
+        Self {
+            _holder: Box::new(holder),
+        }
+    }
+}
 
 #[derive(Debug)]
 pub struct PlatformError {
@@ -55,6 +69,15 @@ pub trait Platform {
 
     /// The user's pictures folder.
     fn pictures_dir(&self) -> Option<PathBuf>;
+
+    /// Registers or removes the entry that starts klip with the system.
+    fn set_autostart(&self, enabled: bool) -> Result<(), PlatformError>;
+
+    /// `None` means another klip instance is already running.
+    fn claim_instance(&self) -> Result<Option<InstanceGuard>, PlatformError>;
+
+    /// Removes the hotkey hooks and waits until they are gone.
+    fn unregister_hotkeys(&self);
 
     /// Replaces the clipboard contents with `image`.
     fn copy_image(&self, image: &Frame) -> Result<(), PlatformError>;

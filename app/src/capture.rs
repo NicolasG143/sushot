@@ -33,12 +33,18 @@ impl From<PlatformError> for CaptureError {
     }
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) enum Delivery {
+    Copied,
+    SaveStarted,
+}
+
 pub(crate) fn full_screen(
     platform: &impl Platform,
     saver: &Saver,
     dialogs: impl Dialogs + Send + 'static,
     output: Output,
-) -> Result<(), CaptureError> {
+) -> Result<Delivery, CaptureError> {
     let desktop = platform.grab_virtual_desktop()?;
     let monitor = platform.monitor_at_cursor()?;
     deliver(platform, saver, dialogs, &desktop, monitor, output)
@@ -52,7 +58,7 @@ pub(crate) fn deliver(
     desktop: &Frame,
     area: Rect,
     output: Output,
-) -> Result<(), CaptureError> {
+) -> Result<Delivery, CaptureError> {
     let capture = desktop
         .crop(area)
         .ok_or(CaptureError::AreaOutsideDesktop(area))?;
@@ -65,13 +71,13 @@ pub(crate) fn deliver(
                 copied.w,
                 copied.h
             );
-            Ok(())
+            Ok(Delivery::Copied)
         }
         Output::SaveDialog => {
             platform.grant_foreground();
             let plan = save_plan(platform);
             if saver.start(capture, plan, dialogs) {
-                Ok(())
+                Ok(Delivery::SaveStarted)
             } else {
                 Err(CaptureError::SaveInProgress)
             }
@@ -181,6 +187,16 @@ mod tests {
 
         fn grant_foreground(&self) {}
 
+        fn set_autostart(&self, _enabled: bool) -> Result<(), PlatformError> {
+            Ok(())
+        }
+
+        fn claim_instance(&self) -> Result<Option<klip_core::InstanceGuard>, PlatformError> {
+            Ok(None)
+        }
+
+        fn unregister_hotkeys(&self) {}
+
         fn local_time(&self) -> LocalTime {
             LocalTime {
                 year: 2026,
@@ -249,7 +265,7 @@ mod tests {
     fn full_screen_to_clipboard_copies_only_the_monitor_under_the_cursor() {
         let platform = TwoMonitors::new("monitor");
 
-        full_screen(
+        let delivery = full_screen(
             &platform,
             &Saver::default(),
             Recording::default(),
@@ -257,6 +273,7 @@ mod tests {
         )
         .unwrap();
 
+        assert_eq!(delivery, Delivery::Copied);
         assert_eq!(
             platform.copied.take(),
             Some((LEFT_MONITOR, LEFT_PIXELS.to_vec()))
@@ -319,9 +336,10 @@ mod tests {
         let target = platform.scratch.pictures().join("shot.png");
         *dialogs.answer.lock().unwrap() = Some(target.clone());
 
-        full_screen(&platform, &saver, dialogs.clone(), Output::SaveDialog).unwrap();
+        let delivery = full_screen(&platform, &saver, dialogs.clone(), Output::SaveDialog).unwrap();
         wait_until_idle(&saver);
 
+        assert_eq!(delivery, Delivery::SaveStarted);
         assert_eq!(
             *dialogs.asked.lock().unwrap(),
             vec![(
