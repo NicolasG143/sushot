@@ -9,7 +9,9 @@ use crate::save::Dialogs;
 const TITLE: &str = "klip";
 const FIRST_RUN_NOTICE: &str = "klip está activo en la bandeja del sistema.\n\n\
 En Windows 11, Impr Pant puede estar asociada a Recortes en Configuración > Accesibilidad > \
-Teclado. klip tiene prioridad sobre Recortes, pero si Recortes se abre igual, desactivá esa opción.";
+Teclado. klip tiene prioridad sobre Recortes, pero si Recortes se abre igual, desactivá esa opción.
+
+Alt izquierdo + Shift izquierdo + Impr Pant también activa el Contraste alto de Windows. Usá Alt o Shift derechos, o desactivá el atajo en Configuración > Accesibilidad > Temas de contraste.";
 
 #[derive(Clone, Copy)]
 pub(crate) struct NativeDialogs;

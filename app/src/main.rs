@@ -108,7 +108,7 @@ fn run(platform: impl Platform) -> Result<(), Box<dyn Error>> {
     }
 
     let (actions_tx, actions_rx) = mpsc::channel();
-    if let Err(error) = platform.register_hotkeys(actions_tx) {
+    if let Err(error) = platform.register_hotkeys(config.hotkey, actions_tx) {
         log::warn!(
             "{error}; klip keeps running, use `klip --region` and its siblings from a system shortcut"
         );

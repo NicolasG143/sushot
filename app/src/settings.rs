@@ -23,7 +23,7 @@ mod tests {
     use std::fs;
     use std::path::PathBuf;
 
-    use klip_core::{Config, load_config, save_config};
+    use klip_core::{Config, HotkeyKey, load_config, save_config};
 
     use super::*;
 
@@ -98,6 +98,7 @@ mod tests {
                 autostart: true,
                 show_toast: true,
                 last_save_dir: Some(PathBuf::from("D:\\Shots")),
+                hotkey: HotkeyKey::PrintScreen,
             }
         );
     }

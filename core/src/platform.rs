@@ -3,7 +3,7 @@ use std::fmt;
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
 
-use crate::{Action, Frame, LocalTime, Mode, Rect};
+use crate::{Action, Frame, HotkeyKey, LocalTime, Mode, Rect};
 
 /// Native handle of a top-level window, as the platform reports it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -58,6 +58,11 @@ pub trait Platform {
     /// Covers `area` with `window`, raised above every other window, in physical pixels.
     fn place_overlay(&self, window: WindowId, area: Rect) -> Result<(), PlatformError>;
 
+    /// Makes the overlay placed by `place_overlay` appear once its first frame is drawn.
+    fn reveal_overlay(&self, _window: WindowId) -> Result<(), PlatformError> {
+        Ok(())
+    }
+
     /// Whether klip can draw its own selection overlay. When it cannot, selection happens
     /// in the system's UI through `capture_with_system_ui`.
     fn has_selection_overlay(&self) -> bool {
@@ -103,5 +108,9 @@ pub trait Platform {
 
     /// Starts delivering an `Action` for every recognized Print Screen combination.
     /// Delivery stops once the receiving end of `actions` is dropped.
-    fn register_hotkeys(&self, actions: Sender<Action>) -> Result<(), PlatformError>;
+    fn register_hotkeys(
+        &self,
+        key: HotkeyKey,
+        actions: Sender<Action>,
+    ) -> Result<(), PlatformError>;
 }

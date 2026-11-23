@@ -4,7 +4,8 @@ use std::mem::size_of;
 use klip_core::{PlatformError, Rect, WindowId};
 use windows::Win32::Foundation::{HWND, LPARAM, RECT};
 use windows::Win32::Graphics::Dwm::{
-    DWMWA_CLOAKED, DWMWA_EXTENDED_FRAME_BOUNDS, DwmGetWindowAttribute,
+    DWMWA_CLOAK, DWMWA_CLOAKED, DWMWA_EXTENDED_FRAME_BOUNDS, DWMWA_TRANSITIONS_FORCEDISABLED,
+    DWMWINDOWATTRIBUTE, DwmGetWindowAttribute, DwmSetWindowAttribute,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     EnumWindows, GWL_EXSTYLE, GetWindowLongPtrW, HWND_TOPMOST, IsIconic, IsWindowVisible,
@@ -92,8 +93,17 @@ fn visible_bounds(window: HWND) -> Option<Rect> {
     (bounds.w > 0 && bounds.h > 0).then_some(bounds)
 }
 
+/// Shows the overlay cloaked and without the DWM open animation, so the first frame
+/// can be drawn before anything appears on screen.
 pub(crate) fn place_overlay(window: WindowId, area: Rect) -> Result<(), PlatformError> {
     let window = HWND(window.0 as *mut c_void);
+    set_flag(
+        window,
+        DWMWA_TRANSITIONS_FORCEDISABLED,
+        true,
+        "disable overlay animation",
+    )?;
+    set_flag(window, DWMWA_CLOAK, true, "cloak overlay window")?;
     unsafe {
         SetWindowPos(
             window,
@@ -105,9 +115,32 @@ pub(crate) fn place_overlay(window: WindowId, area: Rect) -> Result<(), Platform
             SWP_SHOWWINDOW,
         )
     }
-    .map_err(os_error("place overlay window"))?;
+    .map_err(os_error("place overlay window"))
+}
+
+pub(crate) fn reveal_overlay(window: WindowId) -> Result<(), PlatformError> {
+    let window = HWND(window.0 as *mut c_void);
+    set_flag(window, DWMWA_CLOAK, false, "uncloak overlay window")?;
     if !unsafe { SetForegroundWindow(window) }.as_bool() {
         log::debug!("overlay window did not take the foreground");
     }
     Ok(())
+}
+
+fn set_flag(
+    window: HWND,
+    attribute: DWMWINDOWATTRIBUTE,
+    enabled: bool,
+    operation: &'static str,
+) -> Result<(), PlatformError> {
+    let value = BOOL::from(enabled);
+    unsafe {
+        DwmSetWindowAttribute(
+            window,
+            attribute,
+            (&raw const value).cast(),
+            size_of::<BOOL>() as u32,
+        )
+    }
+    .map_err(os_error(operation))
 }

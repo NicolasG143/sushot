@@ -7,52 +7,53 @@ use std::thread;
 use ashpd::desktop::global_shortcuts::{GlobalShortcuts, NewShortcut};
 use ashpd::desktop::screenshot::Screenshot;
 use futures_util::StreamExt;
-use klip_core::{Action, Frame, Mode, Output, PlatformError};
+use klip_core::{Action, Frame, HotkeyKey, Mode, Output, PlatformError};
 
 use crate::image::decode_png;
 use crate::paths;
 use crate::x11::fail;
 
+/// Modifier prefix of each trigger; the configured key name follows it.
 const SHORTCUTS: [(&str, &str, &str, Mode, Output); 6] = [
     (
         "region",
         "Capture a region",
-        "PRINT",
+        "",
         Mode::Region,
         Output::Clipboard,
     ),
     (
         "full",
         "Capture the screen",
-        "CTRL+PRINT",
+        "CTRL+",
         Mode::FullScreen,
         Output::Clipboard,
     ),
     (
         "window",
         "Capture a window",
-        "SHIFT+PRINT",
+        "SHIFT+",
         Mode::Window,
         Output::Clipboard,
     ),
     (
         "region-save",
         "Save a region",
-        "ALT+PRINT",
+        "ALT+",
         Mode::Region,
         Output::SaveDialog,
     ),
     (
         "full-save",
         "Save the screen",
-        "CTRL+ALT+PRINT",
+        "CTRL+ALT+",
         Mode::FullScreen,
         Output::SaveDialog,
     ),
     (
         "window-save",
         "Save a window",
-        "SHIFT+ALT+PRINT",
+        "SHIFT+ALT+",
         Mode::Window,
         Output::SaveDialog,
     ),
@@ -85,13 +86,16 @@ pub(crate) fn screenshot(interactive: bool) -> Result<Frame, PlatformError> {
     frame
 }
 
-pub(crate) fn register_shortcuts(actions: Sender<Action>) -> Result<(), PlatformError> {
+pub(crate) fn register_shortcuts(
+    key: HotkeyKey,
+    actions: Sender<Action>,
+) -> Result<(), PlatformError> {
     let operation = "register portal shortcuts";
     let (ready_tx, ready_rx) = mpsc::channel();
     thread::Builder::new()
         .name("klip-portal-shortcuts".into())
         .spawn(move || {
-            let outcome = pollster::block_on(listen(actions, &ready_tx));
+            let outcome = pollster::block_on(listen(key, actions, &ready_tx));
             if let Err(error) = outcome {
                 log::error!("portal shortcuts stopped: {error}");
                 let _ = ready_tx.send(Err(error));
@@ -104,6 +108,7 @@ pub(crate) fn register_shortcuts(actions: Sender<Action>) -> Result<(), Platform
 }
 
 async fn listen(
+    key: HotkeyKey,
     actions: Sender<Action>,
     ready: &Sender<Result<(), PlatformError>>,
 ) -> Result<(), PlatformError> {
@@ -116,7 +121,8 @@ async fn listen(
     let wanted: Vec<NewShortcut> = SHORTCUTS
         .iter()
         .map(|(id, description, trigger, ..)| {
-            NewShortcut::new(*id, *description).preferred_trigger(*trigger)
+            NewShortcut::new(*id, *description)
+                .preferred_trigger(format!("{trigger}{}", key.portal_name()).as_str())
         })
         .collect();
     portal
