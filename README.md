@@ -180,7 +180,7 @@ El `core` no conoce el sistema operativo: cada plataforma implementa el trait `P
 
 ## Licencia
 
-El código se publica bajo [PolyForm Strict 1.0.0](LICENSE). Es *source-available*, no open source.
+Copyright © 2026 Tuty. El código se publica bajo [PolyForm Strict 1.0.0](LICENSE). Es *source-available*, no open source.
 
 | Permitido | Reservado al titular |
 |---|---|

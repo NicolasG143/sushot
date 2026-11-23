@@ -5,7 +5,7 @@ Pending, deferred or known-incomplete work. Grouped by milestone.
 ## M0 – Setup
 
 - Have a lawyer review the licensing before selling. The source is under PolyForm Strict 1.0.0, which covers noncommercial use only and grants no right to distribute or modify, so two documents are still missing: commercial terms (EULA) for people who buy the binary, and a contributor agreement that both assigns or licenses contributions and permits contributors to modify the code.
-- State the copyright holder (individual or company) in the README. It is not recorded anywhere yet.
+- The owner chose on 2026-11-23 to hold the copyright as an individual under the alias "Tuty", and the README states "Copyright © 2026 Tuty". Ask the lawyer whether the EULA and the contributor agreement must also name the owner's legal name, and whether to register the work under the alias. The Partner Center individual account is opened under the same person.
 - Check the trademark availability of "Sushot" with a trademark professional. The owner confirmed the name on 2026-11-23; it replaced "Klip" on 2026-11-22 because of an existing Windows capture tool and live "KLIP" registrations in software classes.
 - Confirm the license policy exception for `unicode-ident` (`Unicode-3.0`). It is a compile-time dependency of procedural macros and is not linked into the binary, but `Unicode-3.0` is outside the allowed MIT/Apache-2.0/BSD/ISC list.
 
