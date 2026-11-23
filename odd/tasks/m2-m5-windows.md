@@ -21,7 +21,7 @@ Delivery: one commit per verified checkpoint; push and PR slicing stay with the 
 | T5 | M4 tray, autostart, single instance, feedback | S2, S3 | inline | done, manual tray check pending | d9f352d |
 | T6 | M5 metrics, stability, MSIX package, faster clipboard PNG | S2, S3 | inline | partial: signing, Store, landing, manual matrix pending | 145089a |
 | T7 | v1.1 arrow-key nudging | S2 | inline | done | closing commit |
-| T8 | M6 Linux X11, M7 Linux Wayland | S2, S3 | none | not started: no Linux environment | none |
+| T8 | M6 Linux X11, M7 Linux Wayland | S2, S3 | inline | written; compile-checked and pure-logic tests only, never run on Linux | closing commit |
 
 ## Log
 
@@ -31,3 +31,4 @@ Delivery: one commit per verified checkpoint; push and PR slicing stay with the 
 - **L4** Real-input tests (`overlay_to_clipboard`, `save_to_file`) are flaky on a desktop in use: a moving mouse or a window that keeps focus breaks them. Once, before a focus assertion existed, `save_to_file` typed a file path and Enter into the focused browser.
 - **L5** Measured on 2026-11-22, one 1920x1080 monitor: see `METRICS.md`. PNG for the clipboard moved to the fastest compression to meet the 150 ms goal (365 ms to 22 ms).
 - **L6** Not verifiable here: two monitors with mixed DPI, packaged MSIX behavior, signing, Store, landing, Linux.
+- **L7** After the stop hook asked for the Linux milestones, the backend was written against `x11rb`, `arboard`, `ashpd` and `ksni` and verified with `cargo clippy --target x86_64-unknown-linux-gnu` (stub `pkg-config` for the X11 build scripts). Nothing ran on Linux; see `TODO.md`.

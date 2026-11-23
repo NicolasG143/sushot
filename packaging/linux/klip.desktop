@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=klip
+Comment=Screenshot utility
+Exec=klip
+Icon=klip
+Categories=Utility;Graphics;
+Terminal=false

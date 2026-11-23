@@ -58,6 +58,10 @@ Detalles de comportamiento:
 
 Los enlaces de descarga se publican junto con la versión 1.
 
+### Dependencias en Linux
+
+Para compilar hacen falta los paquetes de desarrollo de X11 (por ejemplo `libx11-dev` y `libxcb1-dev` en Debian y Ubuntu) y `pkg-config`. Para ejecutar, el sistema necesita X11 (`libx11-6`, `libxcb1`), el bus de sesión D-Bus y, para el icono de la bandeja, un host de `StatusNotifierItem` (GNOME requiere la extensión AppIndicator). En Wayland además hace falta `xdg-desktop-portal` con el backend del escritorio. El AppImage se arma con `packaging/linux/build-appimage.sh`.
+
 ## Soporte por plataforma
 
 | Plataforma | Soporte | Qué cambia |

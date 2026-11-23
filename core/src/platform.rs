@@ -3,7 +3,7 @@ use std::fmt;
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
 
-use crate::{Action, Frame, LocalTime, Rect};
+use crate::{Action, Frame, LocalTime, Mode, Rect};
 
 /// Native handle of a top-level window, as the platform reports it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -57,6 +57,25 @@ pub trait Platform {
 
     /// Covers `area` with `window`, raised above every other window, in physical pixels.
     fn place_overlay(&self, window: WindowId, area: Rect) -> Result<(), PlatformError>;
+
+    /// Whether klip can draw its own selection overlay. When it cannot, selection happens
+    /// in the system's UI through `capture_with_system_ui`.
+    fn has_selection_overlay(&self) -> bool {
+        true
+    }
+
+    /// Captures `mode` through the system's own capture UI and returns the result.
+    fn capture_with_system_ui(&self, _mode: Mode) -> Result<Frame, PlatformError> {
+        Err(PlatformError::new(
+            "capture with the system UI",
+            "not supported on this platform",
+        ))
+    }
+
+    /// Socket through which `klip --region` and friends reach the running instance.
+    fn ipc_path(&self) -> Option<PathBuf> {
+        None
+    }
 
     /// Lets the next window this process opens take the foreground instead of
     /// appearing behind the active application.

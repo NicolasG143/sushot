@@ -56,9 +56,19 @@ Pending, deferred or known-incomplete work. Milestones are tracked in `ROADMAP.m
 
 ## M6 – Linux X11 and M7 – Linux Wayland
 
-- Not started. There is no Linux machine (X11, GNOME Wayland or KDE Wayland) to run or verify the work, and a backend written without running it would violate the no half-finished code rule. `platform-linux` is still an empty crate and `klip` does not compile for non-Windows targets.
-- When started, the plan from `ROADMAP.md` stands: X11 hotkeys with `global-hotkey` (or `x11rb` directly, to decide), capture and monitor lookup, EWMH window rects, `arboard` clipboard, `.desktop` autostart, a lockfile in `$XDG_RUNTIME_DIR`, the XDG config path, AppImage, then the portal and CLI for Wayland.
-- The `Platform` trait already has the operations a Linux backend needs; `grant_foreground` and `claim_instance` have trivial Linux equivalents.
+- None of the Linux code has been run. It type-checks and passes clippy for `x86_64-unknown-linux-gnu` from Windows, and the portable pieces (XDG paths, `.desktop` entry, lockfile, PNG decoding, CLI parsing, session detection, request protocol) have tests that pass on Windows. The X11 capture, key grabs, RandR, EWMH windows, `arboard` clipboard, portal screenshot, portal shortcuts, Unix socket and `ksni` tray need a real session to confirm.
+- To check Linux compilation from Windows, `x11` build scripts need `pkg-config`; a stub `pkg-config.exe` that prints `-lX11` plus `PKG_CONFIG_ALLOW_CROSS=1` was enough. A real Linux build needs the packages listed in `README.md`.
+- Unit tests that exist only for Linux (`x11.rs`, `hotkeys.rs`, `portal.rs`, `ipc.rs`) compile but were never executed.
+- Print Screen is grabbed for the six combinations with the four Caps Lock and Num Lock states. A grab fails if another client already owns the key (a desktop screenshot tool), and the error is reported at startup.
+- Under Wayland, `XGrabKey` does not receive keys outside XWayland windows, so klip uses the `GlobalShortcuts` portal. If registering hotkeys fails for any reason, klip logs a warning and keeps running so the CLI with a system shortcut still works; on Windows this means a failed hook leaves a tray icon with no hotkeys.
+- `capture_with_system_ui` with `Mode::Window` and `Mode::Region` both open the portal's interactive picker; the portal decides what the user can choose. The portal screenshot file is deleted after reading it.
+- The Wayland portal paths ignore `unregister_hotkeys`; the shortcut thread ends with the process.
+- The X11 clipboard relies on `arboard` keeping the selection owner alive; klip stays resident, but pasting after klip exits yields nothing, which `SPECS.md` section 7.1 already states.
+- `place_overlay` on X11 raises and sizes the window through `ConfigureWindow`; window managers may ignore a position request for a normal window. An override-redirect overlay may be needed.
+- Linux notifications for `show_toast` only write a log line; there is no desktop notification yet.
+- `klip --region` and its siblings fail with a clear message when no instance is running instead of running a one-shot capture.
+- Build the AppImage with `packaging/linux/build-appimage.sh` on Ubuntu and test the six combinations (`ROADMAP.md`, M6), then GNOME and KDE Wayland (M7). Optional `.deb` packaging is not written.
+- Publish the Wayland support table on the landing page once it exists.
 
 ## v1.1
 

@@ -5,3 +5,16 @@ version.workspace = true
 edition.workspace = true
 publish.workspace = true
 license-file.workspace = true
+
+[dependencies]
+klip-core = { workspace = true }
+log = { workspace = true }
+png = { workspace = true }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+arboard = { version = "3.7.0", default-features = false, features = ["image-data"] }
+futures-util = { version = "0.3", default-features = false }
+ashpd = { version = "0.14.3", default-features = false, features = ["async-io", "screenshot", "global_shortcuts"] }
+libc = "0.2.191"
+pollster = "1.0.3"
+x11rb = { version = "0.14.0", features = ["randr"] }
