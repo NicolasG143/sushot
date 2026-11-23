@@ -114,11 +114,16 @@ impl Overlay {
                 self.refresh();
                 outcome
             }
-            WindowEvent::KeyboardInput { event, .. }
-                if event.state == ElementState::Pressed
-                    && event.logical_key == Key::Named(NamedKey::Escape) =>
-            {
-                Outcome::Cancelled
+            WindowEvent::KeyboardInput { event, .. } if event.state == ElementState::Pressed => {
+                if event.logical_key == Key::Named(NamedKey::Escape) {
+                    return Outcome::Cancelled;
+                }
+                if let Some((dx, dy)) = arrow_step(&event.logical_key)
+                    && self.interaction.nudge(dx, dy)
+                {
+                    self.refresh();
+                }
+                Outcome::Pending
             }
             WindowEvent::ScaleFactorChanged {
                 mut inner_size_writer,
@@ -220,6 +225,16 @@ impl Overlay {
                 log::error!("{error}");
             }
         }
+    }
+}
+
+fn arrow_step(key: &Key) -> Option<(i32, i32)> {
+    match key {
+        Key::Named(NamedKey::ArrowLeft) => Some((-1, 0)),
+        Key::Named(NamedKey::ArrowRight) => Some((1, 0)),
+        Key::Named(NamedKey::ArrowUp) => Some((0, -1)),
+        Key::Named(NamedKey::ArrowDown) => Some((0, 1)),
+        _ => None,
     }
 }
 

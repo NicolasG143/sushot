@@ -37,6 +37,15 @@ impl Interaction {
         self.cursor = position;
     }
 
+    /// Moves the corner being dragged by whole pixels. Only a drag in progress reacts.
+    pub(crate) fn nudge(&mut self, dx: i32, dy: i32) -> bool {
+        if self.mode != Mode::Region || self.anchor.is_none() {
+            return false;
+        }
+        self.cursor = (self.cursor.0 + dx, self.cursor.1 + dy);
+        true
+    }
+
     pub(crate) fn hover(&mut self, window: Option<Rect>) {
         self.hovered = window;
     }
@@ -168,6 +177,58 @@ mod tests {
 
         assert_eq!(interaction.highlight(), None);
         assert_eq!(interaction.press(), Outcome::Pending);
+    }
+
+    #[test]
+    fn arrow_nudges_move_the_dragged_corner_one_pixel_at_a_time() {
+        let mut interaction = Interaction::new(Mode::Region);
+        interaction.move_to((50, 40));
+        interaction.press();
+        interaction.move_to((80, 70));
+
+        assert!(interaction.nudge(1, 0));
+        assert!(interaction.nudge(0, -1));
+        assert!(interaction.nudge(-1, 0));
+        assert!(interaction.nudge(-1, 0));
+
+        assert_eq!(
+            interaction.release(),
+            Outcome::Confirmed(Rect {
+                x: 50,
+                y: 40,
+                w: 29,
+                h: 29
+            })
+        );
+    }
+
+    #[test]
+    fn nudging_without_a_drag_in_progress_does_nothing() {
+        let mut interaction = Interaction::new(Mode::Region);
+        interaction.move_to((50, 40));
+
+        assert!(!interaction.nudge(1, 0));
+        assert_eq!(interaction.cursor(), (50, 40));
+    }
+
+    #[test]
+    fn nudging_can_shrink_a_drag_below_the_minimum_and_cancel_it() {
+        let mut interaction = Interaction::new(Mode::Region);
+        interaction.move_to((50, 40));
+        interaction.press();
+        interaction.move_to((52, 60));
+
+        interaction.nudge(-1, 0);
+
+        assert_eq!(interaction.release(), Outcome::Cancelled);
+    }
+
+    #[test]
+    fn window_mode_does_not_nudge() {
+        let mut interaction = Interaction::new(Mode::Window);
+        interaction.hover(Some(window()));
+
+        assert!(!interaction.nudge(1, 1));
     }
 
     #[test]
