@@ -1,6 +1,6 @@
-use klip_core::{Action, Mode, Output};
+use sushot_core::{Action, Mode, Output};
 
-pub(crate) const USAGE: &str = "usage: klip [--region | --full | --window] [--save]";
+pub(crate) const USAGE: &str = "usage: sushot [--region | --full | --window] [--save]";
 
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) enum Command {

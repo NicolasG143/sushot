@@ -1,12 +1,12 @@
-# klip
+# sushot
 
 Capturador de pantalla ultra liviano para Windows y Linux. Vive en la bandeja del sistema, responde a `Impr Pant` y entrega la captura en el portapapeles o en un archivo PNG. Sin editor, sin cuentas, sin red.
 
-> **Estado:** este README describe la versión 1 terminada. Hoy solo funciona `Ctrl + Impr Pant` (pantalla completa al portapapeles) en Windows. El avance real está en [ROADMAP.md](ROADMAP.md), lo pendiente en [TODO.md](TODO.md) y el detalle técnico en [SPECS.md](SPECS.md). Los valores de rendimiento son objetivos de diseño, no mediciones.
+> **Estado:** en Windows funcionan las capturas de pantalla completa, región y ventana, al portapapeles y a archivo; falta firmar y publicar. El soporte de Linux está escrito pero todavía no se ejecutó en Linux. Lo pendiente está en [TODO.md](TODO.md) y las mediciones en [METRICS.md](METRICS.md).
 
 ## Uso rápido
 
-1. Instalá klip e inicialo; aparece un icono en la bandeja.
+1. Instalá sushot e inicialo; aparece un icono en la bandeja.
 2. Presioná `Impr Pant` y arrastrá para seleccionar una región.
 3. Pegá la imagen donde la necesites.
 
@@ -27,7 +27,7 @@ Para guardar en lugar de copiar, sumá `Alt` a cualquier atajo.
 
 Cualquier otra combinación se ignora y pasa al sistema.
 
-> En Windows, `Alt` izquierdo + `Shift` izquierdo + `Impr Pant` es además el atajo del sistema para el Contraste alto, y Windows lo procesa antes que klip. Usá `Alt` o `Shift` derechos, o desactivá ese atajo en Configuración > Accesibilidad > Temas de contraste.
+> En Windows, `Alt` izquierdo + `Shift` izquierdo + `Impr Pant` es además el atajo del sistema para el Contraste alto, y Windows lo procesa antes que sushot. Usá `Alt` o `Shift` derechos, o desactivá ese atajo en Configuración > Accesibilidad > Temas de contraste.
 
 ### Durante la selección
 
@@ -70,7 +70,7 @@ Para compilar hacen falta los paquetes de desarrollo de X11 (por ejemplo `libx11
 |---|---|---|
 | Windows 10 / 11 | Completo | — |
 | Linux X11 | Completo | — |
-| Linux Wayland | Degradado | La selección la gestiona el compositor mediante `xdg-desktop-portal`; el overlay de klip no se usa |
+| Linux Wayland | Degradado | La selección la gestiona el compositor mediante `xdg-desktop-portal`; el overlay de sushot no se usa |
 
 macOS no está soportado.
 
@@ -79,35 +79,35 @@ macOS no está soportado.
 Los atajos globales dependen del compositor. Donde el portal `GlobalShortcuts` no está disponible, se puede vincular un atajo del sistema a la línea de comandos:
 
 ```sh
-klip --region          # región al portapapeles
-klip --full            # pantalla completa al portapapeles
-klip --window          # ventana al portapapeles
-klip --region --save   # cualquier modo con diálogo de guardado
+sushot --region          # región al portapapeles
+sushot --full            # pantalla completa al portapapeles
+sushot --window          # ventana al portapapeles
+sushot --region --save   # cualquier modo con diálogo de guardado
 ```
 
 ## Bandeja y configuración
 
 El menú de la bandeja tiene tres entradas: nombre y versión, **Iniciar con el sistema** y **Salir**.
 
-La configuración es un archivo TOML que klip recrea con valores por defecto si falta o está dañado.
+La configuración es un archivo TOML que sushot recrea con valores por defecto si falta o está dañado.
 
 | Sistema | Ruta |
 |---|---|
-| Windows | `%APPDATA%\klip\config.toml` |
-| Linux | `$XDG_CONFIG_HOME/klip/config.toml` (`~/.config/klip/`) |
+| Windows | `%APPDATA%\sushot\config.toml` |
+| Linux | `$XDG_CONFIG_HOME/sushot/config.toml` (`~/.config/sushot/`) |
 
 | Campo | Función | Por defecto |
 |---|---|---|
-| `autostart` | Iniciar klip con el sistema | Desactivado |
+| `autostart` | Iniciar sushot con el sistema | Desactivado |
 | `last_save_dir` | Carpeta inicial del diálogo de guardado | Imágenes del usuario |
-| `hotkey` | Tecla base de los atajos: `PrintScreen`, `Pause`, `ScrollLock` o `F1` a `F24`. Ctrl, Shift y Alt conservan su función. Se aplica al reiniciar klip | `PrintScreen` |
+| `hotkey` | Tecla base de los atajos: `PrintScreen`, `Pause`, `ScrollLock` o `F1` a `F24`. Ctrl, Shift y Alt conservan su función. Se aplica al reiniciar sushot | `PrintScreen` |
 | `show_toast` | Notificación al copiar | Desactivado |
 
 Solo corre una instancia a la vez; una segunda termina en silencio.
 
 ## Privacidad
 
-klip no tiene telemetría, no abre conexiones de red y no requiere cuenta. Las capturas solo salen del proceso hacia el portapapeles o hacia el archivo que elijas.
+sushot no tiene telemetría, no abre conexiones de red y no requiere cuenta. Las capturas solo salen del proceso hacia el portapapeles o hacia el archivo que elijas.
 
 ## Rendimiento
 
@@ -130,13 +130,13 @@ Objetivos de diseño de la versión 1. Las mediciones de cada release se registr
 | Juegos en pantalla completa exclusiva | La captura puede salir en negro |
 | Ventana elevada (administrador) con el foco | Los atajos pueden no dispararse |
 | Pantalla bloqueada o escritorio seguro de UAC | No se captura; falla en silencio |
-| Windows 11 con Impr Pant asociada a Recortes | klip tiene prioridad y lo avisa en el primer arranque |
-| `Alt` + `Shift` izquierdos + `Impr Pant` en Windows | También activa el Contraste alto; klip lo avisa en el primer arranque |
+| Windows 11 con Impr Pant asociada a Recortes | sushot tiene prioridad y lo avisa en el primer arranque |
+| `Alt` + `Shift` izquierdos + `Impr Pant` en Windows | También activa el Contraste alto; sushot lo avisa en el primer arranque |
 | Wayland | Las capacidades dependen del compositor |
 
 ## Qué no hace
 
-klip no incluye editor de anotaciones, captura de video o GIF, captura con scroll, OCR, subida a la nube ni atajos configurables desde una interfaz. Son exclusiones deliberadas, no pendientes.
+sushot no incluye editor de anotaciones, captura de video o GIF, captura con scroll, OCR, subida a la nube ni atajos configurables desde una interfaz. Son exclusiones deliberadas, no pendientes.
 
 ## Compilar desde el código
 
@@ -157,13 +157,13 @@ cargo about generate about.hbs -o THIRD_PARTY_LICENSES
 La prueba de extremo a extremo de Windows no corre por defecto: envía un `Ctrl + Impr Pant` real y sobrescribe el portapapeles.
 
 ```sh
-cargo test -p klip --test full_screen_to_clipboard -- --ignored
+cargo test -p sushot --test full_screen_to_clipboard -- --ignored
 ```
 
 ## Arquitectura
 
 ```
-klip/
+sushot/
 ├─ core/                Modos, resolve(), recorte, encode PNG, config
 ├─ app/                 Binario: bandeja, overlay, orquestación
 ├─ platform-windows/    Hook de teclado, límites DWM, DPI, autostart
@@ -190,4 +190,4 @@ El código se publica bajo [PolyForm Strict 1.0.0](LICENSE). Es *source-availabl
 
 Este resumen no reemplaza el texto de la licencia. Las licencias de terceros están en `THIRD_PARTY_LICENSES`.
 
-Las contribuciones externas requieren un acuerdo previo (CLA) que también autorice a modificar el código. El nombre y el logo de klip no están cubiertos por la licencia del código.
+Las contribuciones externas requieren un acuerdo previo (CLA) que también autorice a modificar el código. El nombre y el logo de sushot no están cubiertos por la licencia del código.

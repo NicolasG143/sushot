@@ -17,7 +17,7 @@ fn quote_exec(argument: &str) -> String {
 
 pub(crate) fn desktop_entry(exe: &Path) -> String {
     format!(
-        "[Desktop Entry]\nType=Application\nName=klip\nComment=Screenshot utility\nExec={}\nTerminal=false\nX-GNOME-Autostart-enabled=true\n",
+        "[Desktop Entry]\nType=Application\nName=sushot\nComment=Screenshot utility\nExec={}\nTerminal=false\nX-GNOME-Autostart-enabled=true\n",
         quote_exec(&exe.to_string_lossy())
     )
 }
@@ -47,7 +47,7 @@ mod tests {
     impl Scratch {
         fn new(name: &str) -> Self {
             let dir = std::env::temp_dir().join(format!(
-                "klip-linux-autostart-{name}-{}",
+                "sushot-linux-autostart-{name}-{}",
                 std::process::id()
             ));
             let _ = fs::remove_dir_all(&dir);
@@ -63,11 +63,11 @@ mod tests {
 
     #[test]
     fn entry_launches_the_executable_quoted() {
-        let entry = desktop_entry(Path::new("/opt/my apps/klip"));
+        let entry = desktop_entry(Path::new("/opt/my apps/sushot"));
 
         assert!(entry.starts_with("[Desktop Entry]\n"));
         assert!(entry.contains("Type=Application\n"));
-        assert!(entry.contains("Exec=\"/opt/my apps/klip\"\n"));
+        assert!(entry.contains("Exec=\"/opt/my apps/sushot\"\n"));
     }
 
     #[test]
@@ -79,16 +79,16 @@ mod tests {
     #[test]
     fn enabling_creates_the_missing_directory_and_disabling_removes_the_file() {
         let scratch = Scratch::new("toggle");
-        let entry = scratch.0.join("autostart").join("klip.desktop");
+        let entry = scratch.0.join("autostart").join("sushot.desktop");
 
-        set(&entry, Path::new("/usr/bin/klip"), true).unwrap();
+        set(&entry, Path::new("/usr/bin/sushot"), true).unwrap();
         assert!(
             fs::read_to_string(&entry)
                 .unwrap()
-                .contains("/usr/bin/klip")
+                .contains("/usr/bin/sushot")
         );
 
-        set(&entry, Path::new("/usr/bin/klip"), false).unwrap();
+        set(&entry, Path::new("/usr/bin/sushot"), false).unwrap();
         assert!(!entry.exists());
     }
 
@@ -97,8 +97,8 @@ mod tests {
         let scratch = Scratch::new("missing");
 
         set(
-            &scratch.0.join("klip.desktop"),
-            Path::new("/usr/bin/klip"),
+            &scratch.0.join("sushot.desktop"),
+            Path::new("/usr/bin/sushot"),
             false,
         )
         .unwrap();

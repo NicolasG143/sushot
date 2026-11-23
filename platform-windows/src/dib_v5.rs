@@ -1,6 +1,6 @@
 use std::slice;
 
-use klip_core::{Frame, PlatformError};
+use sushot_core::{Frame, PlatformError};
 use windows::Win32::Graphics::Gdi::{BI_BITFIELDS, BITMAPV5HEADER, LCS_GM_IMAGES};
 use windows::Win32::UI::ColorSystem::LCS_sRGB;
 
@@ -58,7 +58,7 @@ pub(crate) fn write(image: &Frame, dib: &mut [u8]) {
 
 #[cfg(test)]
 mod tests {
-    use klip_core::Rect;
+    use sushot_core::Rect;
 
     use super::*;
 

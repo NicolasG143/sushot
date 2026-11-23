@@ -28,14 +28,14 @@ const STARTUP_TIMEOUT: Duration = Duration::from_secs(5);
 const CAPTURE_TIMEOUT: Duration = Duration::from_secs(5);
 const POLL_INTERVAL: Duration = Duration::from_millis(20);
 
-pub struct RunningKlip(Child);
+pub struct RunningSushot(Child);
 
-impl RunningKlip {
+impl RunningSushot {
     pub fn start() -> Self {
-        let mut child = Command::new(env!("CARGO_BIN_EXE_klip"))
+        let mut child = Command::new(env!("CARGO_BIN_EXE_sushot"))
             .stderr(Stdio::piped())
             .spawn()
-            .expect("klip starts");
+            .expect("sushot starts");
         let log = BufReader::new(child.stderr.take().expect("stderr is piped"));
         let (ready_tx, ready_rx) = mpsc::channel();
         thread::spawn(move || {
@@ -48,15 +48,15 @@ impl RunningKlip {
         });
         ready_rx
             .recv_timeout(STARTUP_TIMEOUT)
-            .expect("klip reports that the hook is installed");
+            .expect("sushot reports that the hook is installed");
         Self(child)
     }
 }
 
-impl Drop for RunningKlip {
+impl Drop for RunningSushot {
     fn drop(&mut self) {
-        self.0.kill().expect("klip is still running");
-        self.0.wait().expect("klip exit status is readable");
+        self.0.kill().expect("sushot is still running");
+        self.0.wait().expect("sushot exit status is readable");
     }
 }
 
@@ -183,7 +183,7 @@ fn send(inputs: &[INPUT]) {
 }
 
 pub fn overlay_is_visible() -> bool {
-    unsafe { FindWindowW(None, w!("klip overlay")) }
+    unsafe { FindWindowW(None, w!("sushot overlay")) }
         .is_ok_and(|window| unsafe { IsWindowVisible(window) }.as_bool())
 }
 

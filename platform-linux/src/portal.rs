@@ -7,7 +7,7 @@ use std::thread;
 use ashpd::desktop::global_shortcuts::{GlobalShortcuts, NewShortcut};
 use ashpd::desktop::screenshot::Screenshot;
 use futures_util::StreamExt;
-use klip_core::{Action, Frame, HotkeyKey, Mode, Output, PlatformError};
+use sushot_core::{Action, Frame, HotkeyKey, Mode, Output, PlatformError};
 
 use crate::image::decode_png;
 use crate::paths;
@@ -60,7 +60,7 @@ const SHORTCUTS: [(&str, &str, &str, Mode, Output); 6] = [
 ];
 
 /// Asks the desktop for a screenshot. With `interactive` the portal shows its own
-/// selection UI, which replaces klip's overlay on Wayland.
+/// selection UI, which replaces sushot's overlay on Wayland.
 pub(crate) fn screenshot(interactive: bool) -> Result<Frame, PlatformError> {
     let operation = "take a portal screenshot";
     let response = pollster::block_on(async {
@@ -93,7 +93,7 @@ pub(crate) fn register_shortcuts(
     let operation = "register portal shortcuts";
     let (ready_tx, ready_rx) = mpsc::channel();
     thread::Builder::new()
-        .name("klip-portal-shortcuts".into())
+        .name("sushot-portal-shortcuts".into())
         .spawn(move || {
             let outcome = pollster::block_on(listen(key, actions, &ready_tx));
             if let Err(error) = outcome {

@@ -1,11 +1,11 @@
-use klip_core::PlatformError;
+use sushot_core::PlatformError;
 use windows::Win32::Foundation::{CloseHandle, ERROR_ALREADY_EXISTS, GetLastError, HANDLE};
 use windows::Win32::System::Threading::CreateMutexW;
 use windows::core::PCWSTR;
 
 use crate::error::os_error;
 
-pub(crate) const SINGLE_INSTANCE_NAME: &str = "Local\\klip-single-instance";
+pub(crate) const SINGLE_INSTANCE_NAME: &str = "Local\\sushot-single-instance";
 
 pub(crate) struct NamedMutex(HANDLE);
 
@@ -36,7 +36,7 @@ mod tests {
     use super::*;
 
     fn unique(name: &str) -> String {
-        format!("Local\\klip-test-{name}-{}", std::process::id())
+        format!("Local\\sushot-test-{name}-{}", std::process::id())
     }
 
     #[test]

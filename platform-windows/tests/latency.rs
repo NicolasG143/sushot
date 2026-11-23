@@ -2,8 +2,8 @@
 
 use std::time::Instant;
 
-use klip_core::{Platform, encode_png};
-use klip_platform_windows::WindowsPlatform;
+use sushot_core::{Platform, encode_png};
+use sushot_platform_windows::WindowsPlatform;
 
 #[test]
 #[ignore = "prints timings and replaces the clipboard contents"]

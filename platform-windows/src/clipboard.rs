@@ -3,7 +3,7 @@ use std::slice;
 use std::thread;
 use std::time::Duration;
 
-use klip_core::{Frame, PlatformError, encode_png};
+use sushot_core::{Frame, PlatformError, encode_png};
 use windows::Win32::Foundation::{GlobalFree, HANDLE, HGLOBAL, HWND};
 use windows::Win32::System::DataExchange::{
     CloseClipboard, EmptyClipboard, OpenClipboard, RegisterClipboardFormatW, SetClipboardData,

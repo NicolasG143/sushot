@@ -1,7 +1,7 @@
 #requires -Version 5.1
 <#
 .SYNOPSIS
-  Builds the klip release binary and packs it into an MSIX package.
+  Builds the sushot release binary and packs it into an MSIX package.
 
 .PARAMETER CertificatePath
   Code signing certificate (.pfx). Without it the package is left unsigned, which
@@ -24,7 +24,7 @@ $ErrorActionPreference = 'Stop'
 
 $root = Resolve-Path (Join-Path $PSScriptRoot '..')
 $stage = Join-Path $root 'target\msix\stage'
-$package = Join-Path $root 'target\msix\klip.msix'
+$package = Join-Path $root 'target\msix\sushot.msix'
 
 function Find-SdkTool([string] $name) {
     $kits = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\bin'
@@ -47,7 +47,7 @@ try {
 
 if (Test-Path $stage) { Remove-Item -Recurse -Force $stage }
 New-Item -ItemType Directory -Force (Join-Path $stage 'Assets') | Out-Null
-Copy-Item (Join-Path $root 'target\release\klip.exe') $stage
+Copy-Item (Join-Path $root 'target\release\sushot.exe') $stage
 Copy-Item (Join-Path $root 'packaging\msix\Assets\*.png') (Join-Path $stage 'Assets')
 
 $manifest = Get-Content (Join-Path $root 'packaging\msix\AppxManifest.xml') -Raw

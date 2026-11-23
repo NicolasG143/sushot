@@ -63,7 +63,7 @@ pub trait Platform {
         Ok(())
     }
 
-    /// Whether klip can draw its own selection overlay. When it cannot, selection happens
+    /// Whether sushot can draw its own selection overlay. When it cannot, selection happens
     /// in the system's UI through `capture_with_system_ui`.
     fn has_selection_overlay(&self) -> bool {
         true
@@ -77,7 +77,7 @@ pub trait Platform {
         ))
     }
 
-    /// Socket through which `klip --region` and friends reach the running instance.
+    /// Socket through which `sushot --region` and friends reach the running instance.
     fn ipc_path(&self) -> Option<PathBuf> {
         None
     }
@@ -94,10 +94,10 @@ pub trait Platform {
     /// The user's pictures folder.
     fn pictures_dir(&self) -> Option<PathBuf>;
 
-    /// Registers or removes the entry that starts klip with the system.
+    /// Registers or removes the entry that starts sushot with the system.
     fn set_autostart(&self, enabled: bool) -> Result<(), PlatformError>;
 
-    /// `None` means another klip instance is already running.
+    /// `None` means another sushot instance is already running.
     fn claim_instance(&self) -> Result<Option<InstanceGuard>, PlatformError>;
 
     /// Removes the hotkey hooks and waits until they are gone.

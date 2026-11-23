@@ -2,8 +2,8 @@
 
 use std::sync::mpsc;
 
-use klip_core::{HotkeyKey, Platform};
-use klip_platform_windows::WindowsPlatform;
+use sushot_core::{HotkeyKey, Platform};
+use sushot_platform_windows::WindowsPlatform;
 
 #[test]
 fn hooks_can_be_removed_and_installed_again() {

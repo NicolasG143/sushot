@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
-use klip_core::{Action, Mode, Platform, load_config};
+use sushot_core::{Action, Mode, Platform, load_config};
 use tray_icon::menu::MenuId;
 use winit::application::ApplicationHandler;
 use winit::event::WindowEvent;
@@ -17,7 +17,7 @@ use crate::settings;
 use crate::tray::Tray;
 
 const FLASH_DURATION: Duration = Duration::from_millis(180);
-const TOAST_TITLE: &str = "klip";
+const TOAST_TITLE: &str = "sushot";
 const TOAST_TEXT: &str = "Captura copiada al portapapeles";
 
 pub(crate) enum UiEvent {

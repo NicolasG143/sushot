@@ -13,22 +13,22 @@ fn config_home(xdg_config_home: Option<&str>, home: Option<&Path>) -> Option<Pat
 }
 
 pub(crate) fn config_path(xdg_config_home: Option<&str>, home: Option<&Path>) -> Option<PathBuf> {
-    config_home(xdg_config_home, home).map(|dir| dir.join("klip").join("config.toml"))
+    config_home(xdg_config_home, home).map(|dir| dir.join("sushot").join("config.toml"))
 }
 
 pub(crate) fn autostart_entry_path(
     xdg_config_home: Option<&str>,
     home: Option<&Path>,
 ) -> Option<PathBuf> {
-    config_home(xdg_config_home, home).map(|dir| dir.join("autostart").join("klip.desktop"))
+    config_home(xdg_config_home, home).map(|dir| dir.join("autostart").join("sushot.desktop"))
 }
 
 pub(crate) fn lock_path(xdg_runtime_dir: Option<&str>) -> Option<PathBuf> {
-    absolute(xdg_runtime_dir).map(|dir| dir.join("klip.lock"))
+    absolute(xdg_runtime_dir).map(|dir| dir.join("sushot.lock"))
 }
 
 pub(crate) fn socket_path(xdg_runtime_dir: Option<&str>) -> Option<PathBuf> {
-    lock_path(xdg_runtime_dir).map(|lock| lock.with_file_name("klip.sock"))
+    lock_path(xdg_runtime_dir).map(|lock| lock.with_file_name("sushot.sock"))
 }
 
 /// Reads `XDG_PICTURES_DIR` from the text of `user-dirs.dirs`, falling back to `~/Pictures`.
@@ -83,13 +83,16 @@ mod tests {
     fn config_lives_under_xdg_config_home_when_it_is_absolute() {
         let path = config_path(Some("/custom/cfg"), Some(Path::new("/home/ana")));
 
-        assert_eq!(unix(path), Some("/custom/cfg/klip/config.toml".to_owned()));
+        assert_eq!(
+            unix(path),
+            Some("/custom/cfg/sushot/config.toml".to_owned())
+        );
     }
 
     #[test]
     fn config_falls_back_to_dot_config_for_unset_empty_or_relative_values() {
         let home = Some(Path::new("/home/ana"));
-        let expected = Some("/home/ana/.config/klip/config.toml".to_owned());
+        let expected = Some("/home/ana/.config/sushot/config.toml".to_owned());
 
         assert_eq!(unix(config_path(None, home)), expected);
         assert_eq!(unix(config_path(Some(""), home)), expected);
@@ -107,7 +110,7 @@ mod tests {
 
         assert_eq!(
             unix(path),
-            Some("/home/ana/.config/autostart/klip.desktop".to_owned())
+            Some("/home/ana/.config/autostart/sushot.desktop".to_owned())
         );
     }
 
@@ -115,11 +118,11 @@ mod tests {
     fn runtime_files_need_an_absolute_runtime_directory() {
         assert_eq!(
             unix(lock_path(Some("/run/user/1000"))),
-            Some("/run/user/1000/klip.lock".to_owned())
+            Some("/run/user/1000/sushot.lock".to_owned())
         );
         assert_eq!(
             unix(socket_path(Some("/run/user/1000"))),
-            Some("/run/user/1000/klip.sock".to_owned())
+            Some("/run/user/1000/sushot.sock".to_owned())
         );
         assert_eq!(lock_path(Some("tmp")), None);
         assert_eq!(lock_path(Some("")), None);

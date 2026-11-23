@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use klip_core::{Frame, PlatformError, Rect, WindowId};
+use sushot_core::{Frame, PlatformError, Rect, WindowId};
 use x11rb::connection::Connection;
 use x11rb::protocol::randr::ConnectionExt as _;
 use x11rb::protocol::xproto::{

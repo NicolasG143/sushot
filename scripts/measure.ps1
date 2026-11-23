@@ -1,7 +1,7 @@
 #requires -Version 5.1
 <#
 .SYNOPSIS
-  Measures the size, cold start, idle memory and idle CPU of a klip release build.
+  Measures the size, cold start, idle memory and idle CPU of a sushot release build.
 
 .DESCRIPTION
   Starts the executable once, waits for its "ready" log line, lets it idle and reports
@@ -10,7 +10,7 @@
   restored afterwards.
 
 .PARAMETER Exe
-  Path to klip.exe. Defaults to the release build of this repository.
+  Path to sushot.exe. Defaults to the release build of this repository.
 
 .PARAMETER IdleSeconds
   Seconds over which idle CPU time is sampled.
@@ -24,12 +24,12 @@ param(
 $ErrorActionPreference = 'Stop'
 
 if (-not $Exe) {
-    $Exe = Join-Path $PSScriptRoot '..\target\release\klip.exe'
+    $Exe = Join-Path $PSScriptRoot '..\target\release\sushot.exe'
 }
 $Exe = (Resolve-Path $Exe).Path
-$config = Join-Path $env:APPDATA 'klip\config.toml'
+$config = Join-Path $env:APPDATA 'sushot\config.toml'
 $backup = if (Test-Path $config) { Get-Content $config -Raw } else { $null }
-$log = Join-Path ([IO.Path]::GetTempPath()) "klip-measure-$PID.log"
+$log = Join-Path ([IO.Path]::GetTempPath()) "sushot-measure-$PID.log"
 $process = $null
 
 try {
@@ -41,8 +41,8 @@ try {
     $clock = [Diagnostics.Stopwatch]::StartNew()
     $process = Start-Process -FilePath $Exe -PassThru -RedirectStandardError $log
     while (-not ((Test-Path $log) -and (Select-String -Path $log -Pattern 'ready' -Quiet))) {
-        if ($process.HasExited) { throw "klip exited early with code $($process.ExitCode)." }
-        if ($clock.Elapsed.TotalSeconds -gt 10) { throw 'klip never reported ready.' }
+        if ($process.HasExited) { throw "sushot exited early with code $($process.ExitCode)." }
+        if ($clock.Elapsed.TotalSeconds -gt 10) { throw 'sushot never reported ready.' }
         Start-Sleep -Milliseconds 5
     }
     $startup = $clock.Elapsed.TotalMilliseconds

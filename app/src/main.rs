@@ -1,7 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 #[cfg(not(any(windows, target_os = "linux")))]
-compile_error!("klip has no platform backend for this target");
+compile_error!("sushot has no platform backend for this target");
 
 mod app;
 mod capture;
@@ -22,7 +22,7 @@ use std::process::ExitCode;
 use std::sync::mpsc;
 use std::thread;
 
-use klip_core::{Action, Platform, load_config};
+use sushot_core::{Action, Platform, load_config};
 use tray_icon::menu::MenuEvent;
 use winit::event_loop::EventLoop;
 
@@ -31,12 +31,12 @@ use crate::cli::Command;
 
 #[cfg(windows)]
 fn backend() -> impl Platform {
-    klip_platform_windows::WindowsPlatform
+    sushot_platform_windows::WindowsPlatform
 }
 
 #[cfg(target_os = "linux")]
 fn backend() -> impl Platform {
-    klip_platform_linux::LinuxPlatform
+    sushot_platform_linux::LinuxPlatform
 }
 
 fn main() -> ExitCode {
@@ -45,7 +45,7 @@ fn main() -> ExitCode {
         Ok(command) => command,
         Err(error) => {
             eprintln!(
-                "klip: {}
+                "sushot: {}
 {}",
                 error.0,
                 cli::USAGE
@@ -62,7 +62,7 @@ fn main() -> ExitCode {
         Ok(()) => ExitCode::SUCCESS,
         Err(error) => {
             log::error!("{error}");
-            eprintln!("klip: {error}");
+            eprintln!("sushot: {error}");
             ExitCode::FAILURE
         }
     }
@@ -83,7 +83,7 @@ fn request_capture(_platform: &impl Platform, _action: Action) -> Result<(), Box
 
 fn run(platform: impl Platform) -> Result<(), Box<dyn Error>> {
     let Some(_instance) = platform.claim_instance()? else {
-        log::info!("another klip instance is already running; exiting");
+        log::info!("another sushot instance is already running; exiting");
         return Ok(());
     };
 
@@ -110,12 +110,12 @@ fn run(platform: impl Platform) -> Result<(), Box<dyn Error>> {
     let (actions_tx, actions_rx) = mpsc::channel();
     if let Err(error) = platform.register_hotkeys(config.hotkey, actions_tx) {
         log::warn!(
-            "{error}; klip keeps running, use `klip --region` and its siblings from a system shortcut"
+            "{error}; sushot keeps running, use `sushot --region` and its siblings from a system shortcut"
         );
     }
     let action_proxy = event_loop.create_proxy();
     thread::Builder::new()
-        .name("klip-actions".into())
+        .name("sushot-actions".into())
         .spawn(move || {
             for action in actions_rx {
                 if action_proxy.send_event(UiEvent::Action(action)).is_err() {
@@ -123,7 +123,7 @@ fn run(platform: impl Platform) -> Result<(), Box<dyn Error>> {
                 }
             }
         })?;
-    log::info!("klip {} ready", env!("CARGO_PKG_VERSION"));
+    log::info!("sushot {} ready", env!("CARGO_PKG_VERSION"));
     if first_run {
         dialogs::announce_first_run();
     }

@@ -1,7 +1,7 @@
 #![cfg(windows)]
 
-use klip_core::Platform;
-use klip_platform_windows::WindowsPlatform;
+use sushot_core::Platform;
+use sushot_platform_windows::WindowsPlatform;
 
 #[test]
 fn local_time_is_a_plausible_calendar_moment() {
@@ -14,10 +14,10 @@ fn local_time_is_a_plausible_calendar_moment() {
 }
 
 #[test]
-fn config_path_points_to_klip_config_inside_the_roaming_profile() {
+fn config_path_points_to_sushot_config_inside_the_roaming_profile() {
     let path = WindowsPlatform.config_path().expect("a roaming profile");
 
-    assert!(path.ends_with(r"klip\config.toml"));
+    assert!(path.ends_with(r"sushot\config.toml"));
     assert!(path.is_absolute());
 }
 

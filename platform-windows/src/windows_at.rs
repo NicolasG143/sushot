@@ -1,7 +1,7 @@
 use std::ffi::c_void;
 use std::mem::size_of;
 
-use klip_core::{PlatformError, Rect, WindowId};
+use sushot_core::{PlatformError, Rect, WindowId};
 use windows::Win32::Foundation::{HWND, LPARAM, RECT};
 use windows::Win32::Graphics::Dwm::{
     DWMWA_CLOAK, DWMWA_CLOAKED, DWMWA_EXTENDED_FRAME_BOUNDS, DWMWA_TRANSITIONS_FORCEDISABLED,

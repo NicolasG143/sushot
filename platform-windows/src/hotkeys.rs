@@ -3,7 +3,7 @@ use std::sync::Mutex;
 use std::sync::mpsc::{self, Sender};
 use std::thread::{self, JoinHandle};
 
-use klip_core::{Action, HotkeyKey, PlatformError};
+use sushot_core::{Action, HotkeyKey, PlatformError};
 use windows::Win32::Foundation::{LPARAM, LRESULT, WPARAM};
 use windows::Win32::System::Threading::GetCurrentThreadId;
 use windows::Win32::UI::Input::KeyboardAndMouse::{
@@ -41,7 +41,7 @@ thread_local! {
 pub(crate) fn register(key: HotkeyKey, actions: Sender<Action>) -> Result<(), PlatformError> {
     let (installed_tx, installed_rx) = mpsc::channel();
     let handle = thread::Builder::new()
-        .name("klip-hotkeys".into())
+        .name("sushot-hotkeys".into())
         .spawn(move || run(u32::from(key.windows_vk()), actions, installed_tx))
         .map_err(|error| PlatformError::new(INSTALL, error.to_string()))?;
 

@@ -1,6 +1,6 @@
 [package]
-name = "klip-core"
-description = "Platform-independent capture model for klip"
+name = "sushot-core"
+description = "Platform-independent capture model for sushot"
 version.workspace = true
 edition.workspace = true
 publish.workspace = true

@@ -1,5 +1,5 @@
 [package]
-name = "klip"
+name = "sushot"
 description = "Ultra-lightweight screenshot utility"
 version.workspace = true
 edition.workspace = true
@@ -7,7 +7,7 @@ publish.workspace = true
 license-file.workspace = true
 
 [dependencies]
-klip-core = { workspace = true }
+sushot-core = { workspace = true }
 log = { workspace = true }
 rfd = { version = "0.18.0", default-features = false }
 softbuffer = { version = "0.4.8", default-features = false }
@@ -15,14 +15,14 @@ tray-icon = { version = "0.26.1", default-features = false }
 winit = { version = "0.30", default-features = false, features = ["rwh_06"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
-klip-platform-linux = { workspace = true }
+sushot-platform-linux = { workspace = true }
 rfd = { version = "0.18.0", default-features = false, features = ["xdg-portal"] }
 softbuffer = { version = "0.4.8", default-features = false, features = ["x11"] }
 tray-icon = { version = "0.26.1", default-features = false, features = ["ksni"] }
 winit = { version = "0.30", default-features = false, features = ["rwh_06", "x11"] }
 
 [target.'cfg(windows)'.dependencies]
-klip-platform-windows = { workspace = true }
+sushot-platform-windows = { workspace = true }
 windows = { workspace = true, features = ["Win32_System_Diagnostics_Debug"] }
 
 [dev-dependencies]

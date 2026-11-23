@@ -25,7 +25,7 @@ mod backend {
     use std::path::PathBuf;
     use std::sync::mpsc::Sender;
 
-    use klip_core::{
+    use sushot_core::{
         Action, Frame, HotkeyKey, InstanceGuard, LocalTime, Mode, Platform, PlatformError, Rect,
         WindowId,
     };
@@ -34,7 +34,7 @@ mod backend {
     use crate::{autostart, hotkeys, instance, paths, portal, session, x11};
 
     /// X11 session: full backend. Wayland session: screenshots and shortcuts through
-    /// the desktop portals, without klip's own overlay.
+    /// the desktop portals, without sushot's own overlay.
     pub struct LinuxPlatform;
 
     fn var(name: &str) -> Option<String> {

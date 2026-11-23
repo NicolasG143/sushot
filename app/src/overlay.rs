@@ -3,8 +3,8 @@ use std::num::NonZeroU32;
 use std::sync::Arc;
 use std::time::Instant;
 
-use klip_core::{Action, Canvas, Frame, Mode, Platform, Rect, WindowId};
 use softbuffer::{Context, Surface};
+use sushot_core::{Action, Canvas, Frame, Mode, Platform, Rect, WindowId};
 use winit::dpi::{PhysicalPosition, PhysicalSize};
 use winit::event::{ElementState, MouseButton, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
@@ -38,7 +38,7 @@ impl Overlay {
         let started = Instant::now();
         let bounds = desktop.bounds();
         let attributes = Window::default_attributes()
-            .with_title("klip overlay")
+            .with_title("sushot overlay")
             .with_decorations(false)
             .with_resizable(false)
             .with_visible(false)

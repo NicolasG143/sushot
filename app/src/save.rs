@@ -5,9 +5,9 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 
-use klip_core::{Frame, update_config, write_png};
+use sushot_core::{Frame, update_config, write_png};
 
-const SAVE_THREAD: &str = "klip-save";
+const SAVE_THREAD: &str = "sushot-save";
 
 pub(crate) trait Dialogs {
     /// Asks where to save. `None` means the user cancelled.
@@ -114,7 +114,7 @@ mod tests {
     use std::fs;
     use std::time::{Duration, Instant};
 
-    use klip_core::{Rect, load_config};
+    use sushot_core::{Rect, load_config};
 
     use super::*;
 
@@ -122,7 +122,8 @@ mod tests {
 
     impl Scratch {
         fn new(name: &str) -> Self {
-            let dir = std::env::temp_dir().join(format!("klip-save-{name}-{}", std::process::id()));
+            let dir =
+                std::env::temp_dir().join(format!("sushot-save-{name}-{}", std::process::id()));
             let _ = fs::remove_dir_all(&dir);
             fs::create_dir_all(&dir).unwrap();
             Self(dir)
