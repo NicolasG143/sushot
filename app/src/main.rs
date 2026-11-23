@@ -6,6 +6,7 @@ compile_error!("sushot has no platform backend for this target");
 mod app;
 mod capture;
 mod cli;
+mod dialog_parent;
 mod dialogs;
 mod icon;
 mod interaction;

@@ -74,7 +74,6 @@ pub(crate) fn deliver(
             Ok(Delivery::Copied)
         }
         Output::SaveDialog => {
-            platform.grant_foreground();
             let plan = save_plan(platform);
             if saver.start(capture, plan, dialogs) {
                 Ok(Delivery::SaveStarted)
@@ -184,8 +183,6 @@ mod tests {
         fn place_overlay(&self, _window: WindowId, _area: Rect) -> Result<(), PlatformError> {
             Ok(())
         }
-
-        fn grant_foreground(&self) {}
 
         fn set_autostart(&self, _enabled: bool) -> Result<(), PlatformError> {
             Ok(())

@@ -29,7 +29,7 @@ Pending, deferred or known-incomplete work. Grouped by milestone.
 
 ## M3 – File output
 
-- The save dialog does not always open in the foreground. `grant_foreground` injects an unused key (F24) before the dialog so Windows lets the process take focus, and the end-to-end test failed intermittently because another window (File Explorer, Photos, Discord) stayed in front. Investigate an owner window with `AttachThreadInput` or `SetForegroundWindow` on the dialog itself. Run `save_to_file` only on an idle desktop: it types into whatever window has focus when the dialog fails to come forward.
+- The save dialog opens over an invisible owner window (`ForegroundOwner`) that takes the foreground on the dialog thread, falling back to `AttachThreadInput` when Windows refuses. The end-to-end test passed 7 of 8 runs on 2026-11-22; in the failed run the dialog was in front but the typed path never produced a file, probably because the first, cold dialog was not ready for input yet. Run `save_to_file` on an idle desktop: it checks that the dialog has the focus before typing.
 - Only `Ctrl + Alt + Print Screen` was driven end to end through the native dialog. Region and window with `Alt` share the same code path and are covered by unit tests.
 - The save dialog and error messages are in Spanish, like the tray menu; there is no localization layer.
 - Saving encodes from a cropped copy of the frozen frame, so a full-desktop save holds the frame and the crop in memory while the dialog is open.
